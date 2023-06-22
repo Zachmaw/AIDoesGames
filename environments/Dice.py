@@ -10,6 +10,13 @@
 
 
 
+### objects that need defenition
+# GameObj
+# Player
+    # User
+    # NeuNet
+# Genome
+    # Gene
 
 
 
@@ -25,6 +32,84 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class GameObj:
+    def __init__(self, id, playerCount):### add the other atributes a game object would have
+        self.ready = False
+        self.id = id
+        self.playerCount = playerCount
+        self.tookTurn = {}
+        self.moves = {}
+        self.wins = {}
+        for i in playerCount:
+            self.tookTurn[f'Player{str(i)}'] = False
+            self.moves[f'Player{str(i)}'] = None
+            self.wins[f'Player{str(i)}'] = 0
+        self.ties = 0# nobody could claim the game.
+
+    def get_player_move(self, p):
+        """
+        :param p: [0,1]
+        :return: Move
+        """
+        return self.moves[p]
+
+    def play(self, player, move):
+        self.moves[player] = move
+        if player == 0:
+            self.p1Went = True
+        else:
+            self.p2Went = True
+
+    def connected(self):
+        return self.ready
+
+    def bothWent(self):
+        return self.p1Went and self.p2Went
+
+    def winner(self):
+
+        p1 = self.moves[0].upper()[0]
+        p2 = self.moves[1].upper()[0]
+
+        winner = -1
+        if p1 == "R" and p2 == "S":
+            winner = 0
+        elif p1 == "S" and p2 == "R":
+            winner = 1
+        elif p1 == "P" and p2 == "R":
+            winner = 0
+        elif p1 == "R" and p2 == "P":
+            winner = 1
+        elif p1 == "S" and p2 == "P":
+            winner = 0
+        elif p1 == "P" and p2 == "S":
+            winner = 1
+
+        return winner
+
+    def resetWent(self):
+        self.p1Went = False
+        self.p2Went = False
 
 
 
@@ -43,46 +128,23 @@
 
 
 """
-The classic game of flappy bird. Make with python
-and pygame. Features pixel perfect collision using masks :o
-
-Date Modified:  Jul 30, 2019
-Author: Tech With Tim
-Estimated Work Time: 5 hours (1 just for that damn collision)
+Date Modified:  Jun 20, 2023 - Current
+Author: Zachmaw
+With much code stolen from: Tech With Tim : flappy bird.
 """
-import pygame
 import random
 import os
-import time
 import neat
 import pickle
-pygame.font.init()  # init font
-
-WIN_WIDTH = 600
-WIN_HEIGHT = 800
-FLOOR = 730
-STAT_FONT = pygame.font.SysFont("comicsans", 50)
-END_FONT = pygame.font.SysFont("comicsans", 70)
-DRAW_LINES = False
-
-WIN = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
-pygame.display.set_caption("Flappy Bird")
-
-pipe_img = pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","pipe.png")).convert_alpha())
-bg_img = pygame.transform.scale(pygame.image.load(os.path.join("imgs","bg.png")).convert_alpha(), (600, 900))
-bird_images = [pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","bird" + str(x) + ".png"))) for x in range(1,4)]
-base_img = pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","base.png")).convert_alpha())
 
 gen = 0
 
-class Bird:
+class Game:
     """
-    Bird class representing the flappy bird
+    Class representing the Game object.
     """
-    MAX_ROTATION = 25
-    IMGS = bird_images
-    ROT_VEL = 20
-    ANIMATION_TIME = 5
+    MIN_PLAYERS = 1
+    MAX_PLAYERS = 4
 
     def __init__(self, x, y):
         """
