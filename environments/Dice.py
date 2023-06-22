@@ -64,7 +64,10 @@ class GameObj:
             self.tookTurn[f'Player{str(i)}'] = False
             self.moves[f'Player{str(i)}'] = None
             self.wins[f'Player{str(i)}'] = 0
-        self.ties = 0# nobody could claim the game.
+        self.ties = 0# In case nobody could claim the game.
+
+    def awaitPlayerConnections(self):
+        pass###
 
     def get_player_move(self, p):
         """
@@ -110,6 +113,135 @@ class GameObj:
     def resetWent(self):
         self.p1Went = False
         self.p2Went = False
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import socket
+import threading
+from time import sleep
+
+HEADER = 64
+FORMAT = 'utf-8'
+PORT = 5051
+#For getting machine ip address
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+s.connect(("8.8.8.8", 80))
+SERVER = s.getsockname()[0]
+s.close()
+ADDR = (SERVER, PORT)
+DISCONNECT_MSG = "!disconnect"
+
+#building sever at ip SERVER and port PORT
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind(ADDR)
+
+client_list = []
+player_client_list = [] #list of dict. dict={conn, addr, player_piece}
+player_color = ['white']
+
+global white_turn
+white_turn = True
+
+def connect_client():
+    while True:
+        conn, addr = server.accept()
+        client_list.append(conn)
+        print(f'[NEW CONNECTION]  {addr}')
+        if len(player_client_list) < 2:
+            player_dict = {
+                'conn': conn,
+                'addr': addr,
+                'player_piece': player_color[0]
+            }
+            player_client_list.append(player_dict)
+            send(conn, player_color[0])
+            player_color[0] = 'black'    
+        else:
+            send(conn, 'audiance')
+
+def send(conn, msg):
+    msg_len = len(msg)
+    msg_length = str(msg_len).encode(FORMAT)
+    msg_length += b' ' * (HEADER - len(msg_length))
+    conn.send(msg_length)
+    conn.send(msg.encode(FORMAT))  
+
+def recv(conn):
+    msg_length = conn.recv(HEADER).decode(FORMAT)
+    if msg_length:
+        msg_length = int(msg_length)
+        msg = conn.recv(msg_length).decode(FORMAT)
+    print('msg')
+    return msg
+
+def start():
+    print('[STARTING] server is starting...')
+    server.listen() 
+    print(f'[LISTENING] server is listening at {SERVER}')
+    thread_connect_client = threading.Thread(target=connect_client)
+    thread_connect_client.start()
+
+def toggle_turn(turn):
+    if turn == 'white':
+        turn = 'black'
+    else:
+        turn = 'white'
+    return turn
+
+def main():
+    send_turn_msg = True
+    turn =  'white'
+    waiting = True
+    while True:
+        if len(player_client_list) == 2:
+            if send_turn_msg:
+                for client in client_list:
+                    send(client, turn)
+                send_turn_msg = False
+            # print(turn)
+            if turn == 'white':
+                msg = recv(player_client_list[0]['conn'])
+            else:
+                msg = recv(player_client_list[1]['conn'])
+            if msg:
+                for client in client_list:
+                    # print(1)
+                    send(client, msg)
+                msg = ''
+                send_turn_msg = True
+            turn = toggle_turn(turn)
+
+        elif len(player_client_list) == 1:
+            if waiting:
+                sleep(.5)
+                send(player_client_list[0]['conn'], 'waiting')
+                waiting = False
+            
+
+if __name__ == "__main__":
+    start()
+    main()
+
+
+
+
+
+
+
+
+
 
 
 
