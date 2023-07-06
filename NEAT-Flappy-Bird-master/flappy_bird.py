@@ -412,6 +412,7 @@ def run(config_file):
     :param config_file: location of config file
     :return: None
     """
+    # So, we're generating a Config object from the neat module using the configuration settings defined in a txt file
     config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
                          config_file)
