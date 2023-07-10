@@ -11,6 +11,7 @@ from random import choice
 from os import path
 
 
+img_dir = path.join(path.dirname(__file__), 'img')
 
 
 # # The main function
@@ -210,7 +211,7 @@ from os import path
 
 
 
-#####################################################################
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 class Game:
     def __init__(self):
