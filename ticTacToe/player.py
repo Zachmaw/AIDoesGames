@@ -1,11 +1,11 @@
-import pygame 
+import pygame, os.path
 
 class Player(pygame.sprite.Sprite):
-	def __init__(self, groups, start_pos, create_laser):
+	def __init__(self, groups, start_pos, create_laser, img):
 		
 		# setup 
 		super().__init__(groups)
-		self.image = pygame.image.load('../graphics/player.png').convert_alpha()
+		self.image = img# pygame.image.load(os.path.join(imgPath, '/img/player.png')).convert_alpha()
 		self.rect = pygame.FRect(self.image.get_rect())
 		self.rect.center = start_pos
 
