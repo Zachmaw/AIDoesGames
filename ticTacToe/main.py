@@ -228,7 +228,7 @@ class Game:
         self.star_frames = import_folder('../img/star')
         self.explosion = import_folder('../img/explosion')
         self.meteor_surfaces = import_folder('../img/meteors')
-        self.spareImgs = importImgs(os.path.join('../img')#####
+        self.spareImgs = importImgs(img_dir)
         print(self.spareImgs)
         # self.playerimage = pygame.image.load(os.path.join(imgPath, '/img/player.png')).convert_alpha()
         # self.playerimage = pygame.image.load('../img/player.png').convert_alpha()
