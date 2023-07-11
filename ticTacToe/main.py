@@ -21,10 +21,6 @@ img_dir = path.join(path.dirname(__file__), 'img')
 #     pretty = printPretty(board)
 #     symbol_1, symbol_2 = sym()
 #     full = isFull(board, symbol_1, symbol_2) # The function that starts the game is also in here.
-    
-
-    
-
 
 # # This function introduces the rules of the game Tic Tac Toe
 # def intro():
@@ -37,8 +33,6 @@ img_dir = path.join(path.dirname(__file__), 'img')
 #     input("Press enter to continue.")
 #     print("\n")
 
-
-
 # def initBoard():
 # # This function creates a blank playboard
 #     print("Here is the playboard: ")
@@ -46,8 +40,6 @@ img_dir = path.join(path.dirname(__file__), 'img')
 #              [" ", " ", " "],
 #              [" ", " ", " "]]        
 #     return board
-
-
 
 # def sym():
 # # This function decides the players' symbols
@@ -62,8 +54,6 @@ img_dir = path.join(path.dirname(__file__), 'img')
 #     print("\n")
 #     return (symbol_1, symbol_2)
 
-
-
 # # This function starts the game.
 # def startGamming(board, symbol_1, symbol_2, count):
 #     # Decides the turn
@@ -76,7 +66,6 @@ img_dir = path.join(path.dirname(__file__), 'img')
 #                     "[upper row: enter 0, middle row: enter 1, bottom row: enter 2]:"))
 #     column = int(input("Pick a column:"
 #                        "[left column: enter 0, middle column: enter 1, right column enter 2]"))
-
 
 #     # Check if players' selection is out of range, if so, repick.
 #     while (row > 2 or row < 0) or (column > 2 or column < 0):
@@ -103,8 +92,6 @@ img_dir = path.join(path.dirname(__file__), 'img')
     
 #     return (board)
 
-
-
 # # This function check if the board is full
 # def isFull(board, symbol_1, symbol_2):
 #     count = 1
@@ -127,13 +114,9 @@ img_dir = path.join(path.dirname(__file__), 'img')
 #     # This is function gives a report 
 #     report(count, winner, symbol_1, symbol_2)
 
-
-
 # # This function tells the players that their selection is out of range
 # def outOfBoard(row, column):
 #     print("Out of boarder. Pick another one. ")
-    
-    
 
 # # This function prints the board nice!
 # def printPretty(board):
@@ -144,8 +127,6 @@ img_dir = path.join(path.dirname(__file__), 'img')
 #         print(board[r][0], " |", board[r][1], "|", board[r][2])
 #         print("---+---+---")
 #     return board
-
-
 
 # # This function checks if any winner is winning
 # def isWinner(board, symbol_1, symbol_2, count):
@@ -159,8 +140,7 @@ img_dir = path.join(path.dirname(__file__), 'img')
 #         elif (board[row][0] == board[row][1] == board[row][2] == symbol_2):
 #             winner = False
 #             print("Player " + symbol_2 + ", you won!")
-            
-            
+
 #     # Check the columns
 #     for col in range (0, 3):
 #         if (board[0][col] == board[1][col] == board[2][col] == symbol_1):
@@ -186,15 +166,11 @@ img_dir = path.join(path.dirname(__file__), 'img')
 #     elif board[0][2] == board[1][1] == board[2][0] == symbol_2:
 #         winner = False
 #         print("Player " + symbol_2 + ", you won!")
-
 #     return winner
-    
-
 
 # def illegal(board, symbol_1, symbol_2, row, column):
 #     print("The square you picked is already filled. Pick another one.")
 
-    
 # def report(count, winner, symbol_1, symbol_2):
 #     print("\n")
 #     input("Press enter to see the game summary. ")
