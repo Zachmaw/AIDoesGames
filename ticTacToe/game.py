@@ -52,3 +52,10 @@ class Game:
     def resetWent(self):
         self.p1Went = False
         self.p2Went = False
+
+
+
+
+
+
+

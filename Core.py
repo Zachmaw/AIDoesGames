@@ -19,7 +19,7 @@ from random import randint, uniform
 
 
 class SpriteSheet():
-    def __init__(self, filename):
+    def __init__(self, filename:'str'):
         try:
             self.sheet = pygame.image.load(os.path.join(img_dir, filename)).convert()
             self.filename = filename
@@ -60,19 +60,19 @@ class SpriteSheet():
         return self.filename
 
 
+def get_input(vector:'pygame.math.Vector2'):
+    keys = pygame.key.get_pressed()
+    vector.update((0,0))# direction reset to 0. If you ain't pressin anythin, y'ain't goin' anywhere.#####
+    if keys[pygame.K_RIGHT]:
+        vector.x = 1
+    if keys[pygame.K_LEFT]:
+        vector.x = -1
+    if keys[pygame.K_DOWN]:
+        vector.y = 1
+    if keys[pygame.K_UP]:
+        vector.y = -1
+    return vector.normalize() if vector.magnitude() != 0 else pygame.math.Vector2()# excuse me, what?# okay so, Normalize the vector UNLESS the vectors magnitude is 0. then just make an empty vector
 
-def get_input(vector):
-	keys = pygame.key.get_pressed()
-	vector.update((0,0))
-	if keys[pygame.K_RIGHT]:
-		vector.x = 1
-	elif keys[pygame.K_LEFT]:
-		vector.x = -1
-	if keys[pygame.K_DOWN]:
-		vector.y = 1
-	elif keys[pygame.K_UP]:
-		vector.y = -1
-	return vector.normalize() if vector.magnitude() != 0 else pygame.math.Vector2()
 
 def display_score(time_passed):
 		# text data
@@ -92,7 +92,11 @@ def display_lives(num_lifes):
 		icon_rect = icon_surf.get_rect(bottomleft = (x,y))
 		win.blit(icon_surf, icon_rect)
 
-def loadSSheets():# make a sprite sheet object for each file listed
+def loadSSheets():
+    '''
+    make a sprite sheet object for each file listed
+    where the file names determine how the image is disected.
+    '''
     sheets = {}
     for ssFileName in SSFN:
         t = SpriteSheet(ssFileName)
@@ -108,14 +112,16 @@ def loadSSheets():# make a sprite sheet object for each file listed
     return sheets
 
 # init
-pygame.init()
+pygame.mixer.pre_init(44100, 16, 2, 4096) #frequency, size, channels, buffersize
+pygame.init() #turn all of pygame on.
 SCREEN_SIZE = (1280,720)
 win = pygame.display.set_mode(SCREEN_SIZE)
 pygame.display.set_caption('Spaceship')
 clock = pygame.time.Clock()
 font = pygame.font.Font(None, 40)
-img_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'img')
-SSFN = []
+img_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ticTacToe\\img')##
+sfx_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'sfx')
+SSFN = []# Buttons0212000000000000.png, GUI1815004004004004.png
 
 
 # load graphics
@@ -124,29 +130,30 @@ current_background = pygame.transform.scale(img_loading_initial, SCREEN_SIZE)
 win.blit(current_background, win.get_rect())
 img_background_menu = pygame.image.load(os.path.join(img_dir, "ColorfulHorizon.jpg")).convert()
 allSpritesheets = loadSSheets()#####
-#####
-star_bg_surf = pygame.image.load('../environments/graphics/star_bg.png').convert_alpha()
-player_surf = pygame.image.load('../environments/graphics/player.png').convert_alpha()
-laser_surf = pygame.image.load('../environments/graphics/laser.png').convert_alpha()
-meteor_surf = pygame.image.load('../environments/graphics/meteor.png').convert_alpha()
-icon_surf = pygame.image.load('../environments/graphics/icon.png').convert_alpha()
-broken_surf = pygame.image.load('../environments/graphics/broken.png').convert_alpha()
+
+star_bg_surf = pygame.image.load(os.path.join(img_dir, 'star_bg.png')).convert_alpha()
+player_surf = pygame.image.load(os.path.join(img_dir, 'player.png')).convert_alpha()
+laser_surf = pygame.image.load(os.path.join(img_dir, 'laser.png')).convert_alpha()
+meteor_surf = pygame.image.load(os.path.join(img_dir, 'meteor.png')).convert_alpha()
+icon_surf = pygame.image.load(os.path.join(img_dir, 'icon.png')).convert_alpha()
+broken_surf = pygame.image.load(os.path.join(img_dir, 'broken.png')).convert_alpha()
 
 # bg stars
 
 # spaceship 
-player_rect = pygame.FRect(player_surf.get_rect(center = (640,360)))
+player_rect = player_surf.get_rect(center = (640,360))## was wrapped in an 'pygame.frect()' 
+
 player_direction = pygame.math.Vector2()
-player_speed = 400
+player_speed = 300
 
 # laser 
-laser_speed = 600
+laser_speed = 500
 laser_data = []
 
 # meteor 
 meteor_data = []
-meteor_timer = pygame.USEREVENT + 1
-pygame.time.set_timer(meteor_timer, 150)
+meteor_timer = pygame.USEREVENT
+pygame.time.set_timer(meteor_timer, 1500)
 
 # life system
 lifeCount = 3
@@ -162,12 +169,13 @@ restart_surf = font.render('Restart', True, 'White')
 restart_surf_dark = font.render('Restart', True, '#3a2e3f')
 restart_rect = restart_surf.get_rect(center = (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] - 100))
 
-# audio 
-game_music = pygame.mixer.Sound('../audio/game_music.wav')
-title_music = pygame.mixer.Sound('../audio/title_music.wav')
-laser_sound = pygame.mixer.Sound('../audio/laser.wav')
-explosion_sound = pygame.mixer.Sound('../audio/explosion.wav')
-damage_sound = pygame.mixer.Sound('../audio/damage.ogg')
+# audio
+game_music = pygame.mixer.Sound(os.path.join(sfx_dir, 'game_music.wav'))### path.join
+title_music = pygame.mixer.Sound(os.path.join(sfx_dir, 'title_music.wav'))
+laser_sound = pygame.mixer.Sound(os.path.join(sfx_dir, 'laser.wav'))
+explosion_sound = pygame.mixer.Sound(os.path.join(sfx_dir, 'explosion.wav'))
+damage_sound = pygame.mixer.Sound(os.path.join(sfx_dir, 'explosion.wav'))
+damage_sound.set_volume(0.5)
 
 game_music.play()
 
@@ -182,15 +190,15 @@ while True:
 			exit()
 		if not game_over:
 			if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-				laser_frect = pygame.FRect(laser_surf.get_rect(midbottom = player_rect.center - pygame.math.Vector2(0,30)))
-				laser_data.append({'rect':laser_frect, 'dokill': False})
+				laser_rect = pygame.rect.Rect(laser_surf.get_rect(midbottom = player_rect.center - pygame.math.Vector2(0,30)))
+				laser_data.append({'rect':laser_rect, 'dokill': False})
 				laser_sound.play()
 			if event.type == meteor_timer:
 				x,y  = randint(-100, SCREEN_SIZE[0] -100), randint(-300,-100)
-				meteor_frect = pygame.FRect(meteor_surf.get_rect(center = (x, y)))
-				meteor_direction = pygame.math.Vector2(uniform(0.1,0.4),1)
+				meteor_rect = pygame.Rect(meteor_surf.get_rect(center = (x, y)))
+				meteor_direction = pygame.math.Vector2(randint(-3,3),2)
 				meteor_speed = randint(300,600)
-				meteor_data.append({'rect': meteor_frect, 'direction': meteor_direction, 'speed': meteor_speed, 'dokill': False})
+				meteor_data.append({'rect': meteor_rect, 'direction': meteor_direction, 'speed': meteor_speed, 'dokill': False})
 
 	# bg color 
 	win.fill('#3a2e3f')
@@ -281,142 +289,157 @@ while True:
 
 
 	
-class Game:
-	def __init__(self):
-		pygame.init()
-		self.display_surface = pygame.display.set_mode(SCREEN_SIZE)
-		pygame.display.set_caption('Ultimate intro')
-		self.clock = pygame.time.Clock()
+# class Game:
+# 	def __init__(self):
+# 		pygame.init()
+# 		self.display_surface = pygame.display.set_mode(SCREEN_SIZE)
+# 		pygame.display.set_caption('Ultimate intro')
+# 		self.clock = pygame.time.Clock()
 
-		self.all_sprites = AllSprites()
-		self.lasers = pygame.sprite.Group()
-		self.meteors = pygame.sprite.Group()
-		self.player = Player(self.all_sprites, (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] - 100), self.create_laser)
+# 		self.all_sprites = AllSprites()
+# 		self.lasers = pygame.sprite.Group()
+# 		self.meteors = pygame.sprite.Group()
+# 		self.player = Player(self.all_sprites, (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] - 100), self.create_laser)
 	
-		# imports 
-		self.star_frames = import_folder('..\graphics\star')
-		self.explosion = import_folder('..\graphics\explosion')
-		self.meteor_surfaces = import_folder('..\graphics\meteors')
+# 		# imports 
+# 		self.star_frames = import_folder('..\graphics\star')
+# 		self.explosion = import_folder('..\graphics\explosion')
+# 		self.meteor_surfaces = import_folder('..\graphics\meteors')
 
-		self.broken_surf = pygame.image.load('../graphics/broken.png').convert_alpha()
-		self.broken_rect = self.broken_surf.get_rect(center = (SCREEN_SIZE[0]/2, SCREEN_SIZE[1]/2 - 100))
+# 		self.broken_surf = pygame.image.load('../graphics/broken.png').convert_alpha()
+# 		self.broken_rect = self.broken_surf.get_rect(center = (SCREEN_SIZE[0]/2, SCREEN_SIZE[1]/2 - 100))
 
-		# timer 
-		self.meteor_timer = pygame.USEREVENT + 1
-		pygame.time.set_timer(self.meteor_timer, 150)
+# 		# timer 
+# 		self.meteor_timer = pygame.USEREVENT + 1
+# 		pygame.time.set_timer(self.meteor_timer, 150)
 		
-		# bg stars 
-		for i in range(randint(50,70)):
-			AnimatedStar(self.all_sprites, self.star_frames)
+# 		# bg stars 
+# 		for i in range(randint(50,70)):
+# 			AnimatedStar(self.all_sprites, self.star_frames)
 
-		# overlay
-		self.overlay = Overlay()
+# 		# overlay
+# 		self.overlay = Overlay()
 
-		# score 
-		self.score = 0
-		self.lifes = 3
-		self.start_time = 0
-		self.game_over = False
+# 		# score 
+# 		self.score = 0
+# 		self.lifes = 3
+# 		self.start_time = 0
+# 		self.game_over = False
 
-		# font
-		self.font = pygame.font.Font(None, 40)
+# 		# font
+# 		self.font = pygame.font.Font(None, 40)
 
-		# restart button 
-		self.restart_surf = self.font.render('Restart', True, TEXT_COLOR)
-		self.restart_rect = self.restart_surf.get_rect(center = (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] - 100))
-		self.restart_surf_dark = self.font.render('Restart', True, BG_COLOR)
+# 		# restart button 
+# 		self.restart_surf = self.font.render('Restart', True, TEXT_COLOR)
+# 		self.restart_rect = self.restart_surf.get_rect(center = (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] - 100))
+# 		self.restart_surf_dark = self.font.render('Restart', True, BG_COLOR)
 
-		# music 
-		self.game_music = pygame.mixer.Sound('../audio/game_music.wav')
-		self.title_music = pygame.mixer.Sound('../audio/title_music.wav')
-		self.laser_sound = pygame.mixer.Sound('../audio/laser.wav')
-		self.explosion_sound = pygame.mixer.Sound('../audio/explosion.wav')
-		self.damage_sound = pygame.mixer.Sound('../audio/damage.ogg')
+# 		# music 
+# 		self.game_music = pygame.mixer.Sound('../audio/game_music.wav')
+# 		self.title_music = pygame.mixer.Sound('../audio/title_music.wav')
+# 		self.laser_sound = pygame.mixer.Sound('../audio/laser.wav')
+# 		self.explosion_sound = pygame.mixer.Sound('../audio/explosion.wav')
+# 		self.damage_sound = pygame.mixer.Sound('../audio/damage.ogg')
 
-		if not self.game_over:
-			self.game_music.play()
-		else:
-			self.title_music.play()
+# 		if not self.game_over:
+# 			self.game_music.play()
+# 		else:
+# 			self.title_music.play()
 
-	def create_laser(self, pos, direction):
+# 	def create_laser(self, pos, direction):
 		
-		Laser((self.all_sprites, self.lasers), pos, direction)
-		self.laser_sound.play()
+# 		Laser((self.all_sprites, self.lasers), pos, direction)
+# 		self.laser_sound.play()
 
-	def collisions(self):
+# 	def collisions(self):
 		
-		# laser -> meteor
-		for laser in self.lasers:
-			if pygame.sprite.spritecollide(laser, self.meteors, True, pygame.sprite.collide_mask):
-				Explosion(self.all_sprites, self.explosion, laser.rect.midtop)
-				laser.kill()
-				self.explosion_sound.play()
+# 		# laser -> meteor
+# 		for laser in self.lasers:
+# 			if pygame.sprite.spritecollide(laser, self.meteors, True, pygame.sprite.collide_mask):
+# 				Explosion(self.all_sprites, self.explosion, laser.rect.midtop)
+# 				laser.kill()
+# 				self.explosion_sound.play()
 
-		# meteor -> player 
-		if pygame.sprite.spritecollide(self.player, self.meteors, True, pygame.sprite.collide_mask):
-			self.lifes -= 1
-			self.damage_sound.play()
+# 		# meteor -> player 
+# 		if pygame.sprite.spritecollide(self.player, self.meteors, True, pygame.sprite.collide_mask):
+# 			self.lifes -= 1
+# 			self.damage_sound.play()
 
-			if self.lifes <= 0:
-				self.score = pygame.time.get_ticks() - self.start_time
-				self.game_over = True
-				for meteor in self.meteors:
-					meteor.kill()
-				self.player.rect.center = (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] - 100)
+# 			if self.lifes <= 0:
+# 				self.score = pygame.time.get_ticks() - self.start_time
+# 				self.game_over = True
+# 				for meteor in self.meteors:
+# 					meteor.kill()
+# 				self.player.rect.center = (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] - 100)
 
-				self.game_music.stop()
-				self.title_music.play() 
+# 				self.game_music.stop()
+# 				self.title_music.play() 
 
-	def run(self):
-		while True:
-			for event in pygame.event.get():
-				if event.type == pygame.QUIT:
-					pygame.quit()
-					sys.exit()
-				if event.type == self.meteor_timer and not self.game_over:
-					Meteor((self.all_sprites, self.meteors), choice(self.meteor_surfaces))
+# 	def run(self):
+# 		while True:
+# 			for event in pygame.event.get():
+# 				if event.type == pygame.QUIT:
+# 					pygame.quit()
+# 					sys.exit()
+# 				if event.type == self.meteor_timer and not self.game_over:
+# 					Meteor((self.all_sprites, self.meteors), choice(self.meteor_surfaces))
 
-			self.display_surface.fill(BG_COLOR)
+# 			self.display_surface.fill(BG_COLOR)
 			
-			if self.game_over:
+# 			if self.game_over:
 				
-				self.display_surface.blit(self.broken_surf,self.broken_rect)	
-				# text 
-				text_surf = self.font.render(f'Your score: {self.score}', True, TEXT_COLOR)
-				text_rect = text_surf.get_rect(center = (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2 + 50))
-				self.display_surface.blit(text_surf, text_rect)
+# 				self.display_surface.blit(self.broken_surf,self.broken_rect)	
+# 				# text 
+# 				text_surf = self.font.render(f'Your score: {self.score}', True, TEXT_COLOR)
+# 				text_rect = text_surf.get_rect(center = (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2 + 50))
+# 				self.display_surface.blit(text_surf, text_rect)
 
-				# button 
-				if self.restart_rect.collidepoint(pygame.mouse.get_pos()):
-					pygame.draw.rect(self.display_surface, TEXT_COLOR, self.restart_rect.inflate(30,30),0,3)
-					self.display_surface.blit(self.restart_surf_dark, self.restart_rect)
+# 				# button 
+# 				if self.restart_rect.collidepoint(pygame.mouse.get_pos()):
+# 					pygame.draw.rect(self.display_surface, TEXT_COLOR, self.restart_rect.inflate(30,30),0,3)
+# 					self.display_surface.blit(self.restart_surf_dark, self.restart_rect)
 
-					if pygame.mouse.get_pressed()[0]:
-						self.game_over = False
-						self.lifes = 3
-						self.start_time = pygame.time.get_ticks()
+# 					if pygame.mouse.get_pressed()[0]:
+# 						self.game_over = False
+# 						self.lifes = 3
+# 						self.start_time = pygame.time.get_ticks()
 
-						self.title_music.stop() 
-						self.game_music.play()
-				else:
-					self.display_surface.blit(self.restart_surf, self.restart_rect)
+# 						self.title_music.stop() 
+# 						self.game_music.play()
+# 				else:
+# 					self.display_surface.blit(self.restart_surf, self.restart_rect)
 
-				pygame.draw.rect(self.display_surface, TEXT_COLOR, self.restart_rect.inflate(30,30), 5,3)
-			else:
-				dt = self.clock.tick() / 1000
+# 				pygame.draw.rect(self.display_surface, TEXT_COLOR, self.restart_rect.inflate(30,30), 5,3)
+# 			else:
+# 				dt = self.clock.tick() / 1000
 
-				self.score = pygame.time.get_ticks() - self.start_time
-				self.overlay.display_score(self.score)
+# 				self.score = pygame.time.get_ticks() - self.start_time
+# 				self.overlay.display_score(self.score)
 
-				self.all_sprites.update(dt)
-				self.all_sprites.custom_draw()
+# 				self.all_sprites.update(dt)
+# 				self.all_sprites.custom_draw()
 
-				self.collisions()
+# 				self.collisions()
 
-				self.overlay.display_lifes(self.lifes)
+# 				self.overlay.display_lifes(self.lifes)
 
-			pygame.display.update()
+# 			pygame.display.update()
 			
 
-game = Game()
-game.run()
+# game = Game()
+# game.run()
+
+
+
+
+
+
+# class Simulation:
+#     def __init__(self, environment:'Env') -> None:
+#         self.environment = environment
+#         pass
+#     def advance(self):
+#         pass
+#     def play(self):
+#         # repetedly call advance
+#         pass
