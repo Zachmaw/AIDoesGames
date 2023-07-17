@@ -1,4 +1,5 @@
 # Obtain settings regarding the size/position of the game window.
+# call a selected environment from the environments folder
 # load a network from text file or pickle or something
 #
 
