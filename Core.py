@@ -12,54 +12,121 @@ from sys import exit
 from random import randint, uniform
 
 
+### objects that need defenition
+# GameObj
+# Player
+    # User
+    # NeuNet
+# Genome
+    # Gene
+
+
+
+
+class Sim:
+    def __init__(self, game:'class') -> None:
+        '''Initialize an environment for this simulation'''
+        self.environment = game()## set to a user defined class which imports from Env
+        self.envHistory = dict()### a place to store kept Environments by a name in str and list of settings?
+    def advance(self, actions:'list[int]', envRules:'function'):
+        '''Each Agent is always allowed one action per timestep.\n
+        It is important to maintain the order of Agent actions.'''
+        return envRules(actions)### make sure actions.len() can be varied between timesteps.(as long as len(actions) == len(agents))
+    def setEnvironment(self,newEnv,keepEnv:'bool'=False):
+        '''Set a new environment for this simulation
+        (Can be incredibly deadly for Agent objects...)'''
+        ### keepEnv
+        if keepEnv:
+            pass### ugh
+        self.environment = newEnv
+
+
+
 # class MyNeuralNet():
 #     def __init__(self) -> None:
 #         pass
 
 
+# class Genome:
+#     def __init__(self) -> None:
+#         pass
+
+# class Player:
+#     def __init__(self, isUser:'bool') -> None:
+#         if isUser:
+#             pass### Make the object recieve input from input devices
+            
+#         else:
+#             pass### Build a NN from a Genome to handle the object.
+#         pass
+        
+        
 
 
-class SpriteSheet():
-    def __init__(self, filename:'str'):
-        try:
-            self.sheet = pygame.image.load(os.path.join(img_dir, filename)).convert()
-            self.filename = filename
-        except pygame.error as e:
-            print(f"Unable to load spritesheet image: {filename}")
-            raise SystemExit(e)
-    def image_at(self, rectangle, colorkey = None):# Load the image from x, y, x+offset, y+offset.
-        rect = pygame.Rect(rectangle)
-        image = pygame.Surface(rect.size).convert()
-        image.blit(self.sheet, (0, 0), rect)
-        if colorkey is not None:
-            if colorkey == -1:
-                colorkey = image.get_at((0,0))
-            image.set_colorkey(colorkey, pygame.RLEACCEL)
-        return image
-    def images_at(self, rects, colorkey = None):#Load a whole bunch of images and return them as a list.
-        return [self.image_at(rect, colorkey) for rect in rects]
-    def load_strip(self, rect, image_count, colorkey = None):#Load a whole strip of images, and return them as a list.
-        tups = [(rect[0]+rect[2]*x, rect[1], rect[2], rect[3])
-                for x in range(image_count)]
-        return self.images_at(tups, colorkey)
-    def load_grid_images(self, num_rows, num_cols, x_margin=0, x_padding=0, y_margin=0, y_padding=0):#Load a grid of images. Assumes symmetrical padding on left and right. Calls self.images_at() to get list of images.
-        sheet_rect = self.sheet.get_rect()
-        sheet_width, sheet_height = sheet_rect.size
-        x_sprite_size = ( sheet_width - 2 * x_margin - (num_cols - 1) * x_padding ) / num_cols# To calculate the size of each sprite, subtract the two margins,
-        y_sprite_size = ( sheet_height - 2 * y_margin - (num_rows - 1) * y_padding ) / num_rows# and the padding between each row, then divide by num_cols.
-        sprite_rects = []
-        for row_num in range(num_rows):# Position of sprite rect is margin + one sprite size
-            for col_num in range(num_cols):# and one padding size for each row. Same for y.
-                x = x_margin + col_num * (x_sprite_size + x_padding)
-                y = y_margin + row_num * (y_sprite_size + y_padding)
-                sprite_rect = (x, y, x_sprite_size, y_sprite_size)
-                sprite_rects.append(sprite_rect)
-        grid_images = self.images_at(sprite_rects)
-        print(f"Loaded {len(grid_images)} images from {self.filename[:-20]}.")
-        return grid_images
-    def fileNameQuery(self):
-        return self.filename
 
+
+
+
+# class SpriteSheet():
+#     def __init__(self, filename:'str'):
+#         try:
+#             self.sheet = pygame.image.load(os.path.join(img_dir, filename)).convert()
+#             self.filename = filename
+#         except pygame.error as e:
+#             print(f"Unable to load spritesheet image: {filename}")
+#             raise SystemExit(e)
+#     def image_at(self, rectangle, colorkey = None):# Load the image from x, y, x+offset, y+offset.
+#         rect = pygame.Rect(rectangle)
+#         image = pygame.Surface(rect.size).convert()
+#         image.blit(self.sheet, (0, 0), rect)
+#         if colorkey is not None:
+#             if colorkey == -1:
+#                 colorkey = image.get_at((0,0))
+#             image.set_colorkey(colorkey, pygame.RLEACCEL)
+#         return image
+#     def images_at(self, rects, colorkey = None):#Load a whole bunch of images and return them as a list.
+#         return [self.image_at(rect, colorkey) for rect in rects]
+#     def load_strip(self, rect, image_count, colorkey = None):#Load a whole strip of images, and return them as a list.
+#         tups = [(rect[0]+rect[2]*x, rect[1], rect[2], rect[3])
+#                 for x in range(image_count)]
+#         return self.images_at(tups, colorkey)
+#     def load_grid_images(self, num_rows, num_cols, x_margin=0, x_padding=0, y_margin=0, y_padding=0):#Load a grid of images. Assumes symmetrical padding on left and right. Calls self.images_at() to get list of images.
+#         sheet_rect = self.sheet.get_rect()
+#         sheet_width, sheet_height = sheet_rect.size
+#         x_sprite_size = ( sheet_width - 2 * x_margin - (num_cols - 1) * x_padding ) / num_cols# To calculate the size of each sprite, subtract the two margins,
+#         y_sprite_size = ( sheet_height - 2 * y_margin - (num_rows - 1) * y_padding ) / num_rows# and the padding between each row, then divide by num_cols.
+#         sprite_rects = []
+#         for row_num in range(num_rows):# Position of sprite rect is margin + one sprite size
+#             for col_num in range(num_cols):# and one padding size for each row. Same for y.
+#                 x = x_margin + col_num * (x_sprite_size + x_padding)
+#                 y = y_margin + row_num * (y_sprite_size + y_padding)
+#                 sprite_rect = (x, y, x_sprite_size, y_sprite_size)
+#                 sprite_rects.append(sprite_rect)
+#         grid_images = self.images_at(sprite_rects)
+#         print(f"Loaded {len(grid_images)} images from {self.filename[:-20]}.")
+#         return grid_images
+#     def fileNameQuery(self):
+#         return self.filename
+# def loadSSheets():
+#     '''
+#     make a sprite sheet object for each file listed
+#     where the file names determine how the image is disected.
+#     '''
+#     sheets = {}
+#     for ssFileName in SSFN:
+#         t = SpriteSheet(ssFileName)
+#         num_rows = int(ssFileName[-20:-18])
+#         num_cols = int(ssFileName[-18:-16])
+#         x_margin = int(ssFileName[-16:-13])
+#         x_padding = int(ssFileName[-13:-10])
+#         y_margin = int(ssFileName[-10:-7])
+#         y_padding = int(ssFileName[-7:-4])
+#         print(num_rows, num_cols, x_margin, x_padding, y_margin, y_padding, ssFileName[:-20])
+#         gridimg = t.load_grid_images(num_rows, num_cols, x_margin, x_padding, y_margin, y_padding)
+#         sheets[ssFileName[:-20]] = gridimg
+#     return sheets
+# SSFN = []# Buttons0212000000000000.png, GUI1815004004004004.png
+# allSpritesheets = loadSSheets()
 
 def get_input(vector:'pygame.math.Vector2'):
     keys = pygame.key.get_pressed()
@@ -93,25 +160,6 @@ def display_lives(num_lifes):
 		icon_rect = icon_surf.get_rect(bottomleft = (x,y))
 		win.blit(icon_surf, icon_rect)
 
-def loadSSheets():
-    '''
-    make a sprite sheet object for each file listed
-    where the file names determine how the image is disected.
-    '''
-    sheets = {}
-    for ssFileName in SSFN:
-        t = SpriteSheet(ssFileName)
-        num_rows = int(ssFileName[-20:-18])
-        num_cols = int(ssFileName[-18:-16])
-        x_margin = int(ssFileName[-16:-13])
-        x_padding = int(ssFileName[-13:-10])
-        y_margin = int(ssFileName[-10:-7])
-        y_padding = int(ssFileName[-7:-4])
-        print(num_rows, num_cols, x_margin, x_padding, y_margin, y_padding, ssFileName[:-20])
-        gridimg = t.load_grid_images(num_rows, num_cols, x_margin, x_padding, y_margin, y_padding)
-        sheets[ssFileName[:-20]] = gridimg
-    return sheets
-
 # init
 pygame.mixer.pre_init(44100, 16, 2, 4096) #frequency, size, channels, buffersize
 pygame.init() #turn all of pygame on.
@@ -122,7 +170,6 @@ clock = pygame.time.Clock()
 font = pygame.font.Font(None, 40)
 img_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ticTacToe\\img')##
 sfx_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'sfx')
-SSFN = []# Buttons0212000000000000.png, GUI1815004004004004.png
 
 
 # load graphics
@@ -130,7 +177,6 @@ img_loading_initial = pygame.image.load(os.path.join(img_dir, "loading.jpg")).co
 current_background = pygame.transform.scale(img_loading_initial, SCREEN_SIZE)
 win.blit(current_background, win.get_rect())
 img_background_menu = pygame.image.load(os.path.join(img_dir, "ColorfulHorizon.jpg")).convert()
-allSpritesheets = loadSSheets()#####
 
 star_bg_surf = pygame.image.load(os.path.join(img_dir, 'star_bg.png')).convert_alpha()
 player_surf = pygame.image.load(os.path.join(img_dir, 'player.png')).convert_alpha()

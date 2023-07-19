@@ -1,153 +1,5 @@
 
-
-
-
-
-
-
-
-
-
-
-
-### objects that need defenition
-# GameObj
-# Player
-    # User
-    # NeuNet
-# Genome
-    # Gene
-
-
-
-
-
-
-
-
-
-
-
-class Genome:
-    def __init__(self) -> None:
-        pass
-
-class Player:
-    def __init__(self, isUser:'bool') -> None:
-        if isUser:
-            pass### Make the object recieve input from input devices
-            
-        else:
-            pass### Build a NN from a Genome to handle the object.
-        pass
-        
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class GameObj:
-    def __init__(self, id, playerCount):### add the other atributes a game object would have
-        self.ready = False
-        self.id = id
-        self.playerCount = playerCount
-        self.tookTurn = {}
-        self.moves = {}
-        self.wins = {}
-        for i in playerCount:
-            self.tookTurn[f'Player{str(i)}'] = False
-            self.moves[f'Player{str(i)}'] = None
-            self.wins[f'Player{str(i)}'] = 0
-        self.ties = 0# In case nobody could claim the game.
-
-    def awaitPlayerConnections(self):
-        pass###
-
-    def get_player_move(self, p):
-        """
-        :param p: [0,1]
-        :return: Move
-        """
-        return self.moves[p]
-
-    def play(self, player, move):
-        self.moves[player] = move
-        if player == 0:
-            self.p1Went = True
-        else:
-            self.p2Went = True
-
-    def connected(self):
-        return self.ready
-
-    def bothWent(self):
-        return self.p1Went and self.p2Went
-
-    def winner(self):
-
-        p1 = self.moves[0].upper()[0]
-        p2 = self.moves[1].upper()[0]
-
-        winner = -1
-        if p1 == "R" and p2 == "S":
-            winner = 0
-        elif p1 == "S" and p2 == "R":
-            winner = 1
-        elif p1 == "P" and p2 == "R":
-            winner = 0
-        elif p1 == "R" and p2 == "P":
-            winner = 1
-        elif p1 == "S" and p2 == "P":
-            winner = 0
-        elif p1 == "P" and p2 == "S":
-            winner = 1
-
-        return winner
-
-    def resetWent(self):
-        self.p1Went = False
-        self.p2Went = False
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+from base import Env
 
 
 """
@@ -155,20 +7,13 @@ Date Modified:  Jun 20, 2023 - Current
 Author: Zachmaw
 With much code stolen from: Tech With Tim : flappy bird.
 """
-import random
 import os
 import neat
-import pickle
 
-gen = 0
-
-class Game:
+class Pig(Env):
     """
     Class representing the Game object.
     """
-    MIN_PLAYERS = 1
-    MAX_PLAYERS = 4
-
     def __init__(self):
         """
         Initialize the object
@@ -176,8 +21,9 @@ class Game:
         :param y: starting y pos (int)
         :return: None
         """
-        pass
-
+        self.MIN_PLAYERS = 1
+        self.MAX_PLAYERS = 7
+        
 
 
 
