@@ -3,10 +3,6 @@
 class Env:
     def __init__(self) -> None:
         pass
-<<<<<<< Updated upstream
-    def step(self, )######
-    
-=======
     def advanceTime(self, vectors:'list[float]'):
         '''
         should take in a list of actions##### and
@@ -14,7 +10,6 @@ class Env:
         based on the game being played
         '''
         pass
->>>>>>> Stashed changes
 
 
 
