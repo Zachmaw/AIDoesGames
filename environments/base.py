@@ -1,15 +1,15 @@
 # import pygame
 
-class Env:
-    def __init__(self) -> None:
-        pass
-    def advanceTime(self, vectors:'list[float]'):
+class Env:# all Games have this function which is called from the Sim class
+    def advanceTime(self, actions:'list[int]', envRules:'function'):
         '''
-        should take in a list of actions##### and
-        return a list of observations
-        based on the game being played
-        '''
-        pass
+        should take in a list of actions and\n
+        return a list of observations\n
+        which comes directly from envRules\n
+        based on the game being played\n
+        Each Agent is always allowed one action per timestep.\n
+        It is important to maintain the order of Agent actions.'''
+        return envRules(actions)### make sure actions.len() can be varied between timesteps.(as long as len(actions) == len(agents))
 
 
 
