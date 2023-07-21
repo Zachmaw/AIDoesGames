@@ -1,7 +1,17 @@
 # Obtain settings regarding the size/position of the game window.
 # call a selected environment from the environments folder
-# load a network from text file or pickle or something
+# The Simulation initializes an Environment, checking it's maxPopulation.
+# load a nn from text file or pickle or something
+# The Sim loads the population of availiable Genomes.
+# The Sim adds all players to the Environment, starting with User Agents followed by NN Agents.
+# The Sim selects from the population of Genomes based on the Env's max population.
 #
+
+# the Simulation communicates between Agent and Environment.
+# because like the Agent and the Environment are seperate...
+
+# Then Generates the next population of availiable Genomes.
+
 
 import pygame, sys
 from random import randint
@@ -14,11 +24,11 @@ from random import randint, uniform
 
 ### objects that need defenition
 # GameObj
-# Player
+# Agent
     # User
     # NeuNet
 # Genome
-    # Gene
+    # Gene?
 
 
 
@@ -26,7 +36,7 @@ from random import randint, uniform
 class Sim:
     def __init__(self, game:'class') -> None:
         '''Initialize an environment for this simulation'''
-        self.environment = game()## set to a user defined class which imports from Env
+        self.environment = game(players)## set to a user defined class which imports from Env
         self.envHistory = dict()### a place to store kept Environments by a name in str and list of settings?
     def advance(self, actions:'list[int]', envRules:'function'):
         '''Each Agent is always allowed one action per timestep.\n
@@ -47,22 +57,31 @@ class Sim:
 #         pass
 
 
-# class Genome:
-#     def __init__(self) -> None:
+class Genome:
+    def __init__(self) -> None:
+        pass
+
+class Agent:# Recieves rewards and observations, and returns an action
+    def __init__(self, geneSeq:'Genome'=None) -> None:
+        self.memory = {}
+        if geneSeq:### Build a NN from a Genome to handle the object.
+            pass
+        else:# That there's a Human, probably.
+            pass### Make the object recieve input from input devices( wait on the User)
+
+
+
+# class Simulation:
+#     def __init__(self, environment:'Env') -> None:
+#         self.environment = environment
+#         self.running = False
+#     def advance(self):
 #         pass
-
-# class Player:
-#     def __init__(self, isUser:'bool') -> None:
-#         if isUser:
-#             pass### Make the object recieve input from input devices
-            
-#         else:
-#             pass### Build a NN from a Genome to handle the object.
+#     def play(self):
+#         # repetedly call advance
+#         while self.running:
+#             self.advance()
 #         pass
-        
-        
-
-
 
 
 
@@ -477,16 +496,3 @@ while True:
 # game.run()
 
 
-
-
-
-
-# class Simulation:
-#     def __init__(self, environment:'Env') -> None:
-#         self.environment = environment
-#         pass
-#     def advance(self):
-#         pass
-#     def play(self):
-#         # repetedly call advance
-#         pass

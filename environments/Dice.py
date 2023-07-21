@@ -1,30 +1,92 @@
-
+from ..Core import Agent
 from base import Env
-
+from math import floor
 
 """
 Date Modified:  Jun 20, 2023 - Current
 Author: Zachmaw
-With much code stolen from: Tech With Tim : flappy bird.
+With much code stolen from: Tech With Tim : flappy bird with NN.
 """
 import os
 import neat
+from random import randint
 
 class Pig(Env):
     """
-    Class representing the Game object.
+    Classic Pig with a penalty rule.
     """
     def __init__(self):
-        """
-        Initialize the object
-        :param x: starting x pos (int)
-        :param y: starting y pos (int)
-        :return: None
-        """
-        self.MIN_PLAYERS = 1
         self.MAX_PLAYERS = 7
-        
+        self.DICE = [2,4,6,8,10,12,20]
+        self.ready = False
+        self.players = list()# of int representing that player's score
+        self.turn = int()
+        self.round = int()
+        self.currentMove = None# a tuple of float, len 2
+        self.tempScore = int()
+        self.penalty = int()
+        self.leadScore = int()
+    def addPlayer(self, player:'Agent'):
+        self.players.append(player)
+    def ruleset(self, inputs:'list[tuple(float)]'):### a lot of this should be writen outside the environment... Only pass in decoded actions from the users?
+        self.currentMove = inputs[self.turn]# find out who's turn it is and extract active player action
+            
+        for player in inputs:
+            result = self.decodeActs(player)
+            if result == 1:
+                tempN = self.roll(self.DICE[floor(self.round/2)])#every even round use the next dice
+                if tempN == 0:
+                    self.turn += 1### Im not sure that's all I had to do here...
+                else:# didn't roll 0
+                    self.tempScore += tempN
 
+
+            else:
+
+
+                self.players[self.turn] += self.tempScore
+                self.turn += 1
+
+
+
+
+        ### compile results and return a fresh set of observations to the Sim
+
+        # based on the move [roll/hold/idle]
+        # return observations (for Agent: list[oservations])
+        # this game has the observations[turnCount:int, roundCount:int, grandScore:int, tempScore:int, leadScore:int, penalty:int]
+        # 
+        ##### what format am I returning exactly? same observations to all? yeah. no.
+        # everyone only sees their own score and the highest one, not all of them.
+        # which means everyone gets a personalized observation? yeah....
+        observations = list()### Rename
+        self.leadScore = sorted(self.players, reverse=True)
+        for p in self.players:# for player in self.players:### really think about it...
+            observations.append([self.turn, self.round, p, self.tempScore, self.leadScore, self.penalty])
+            ### consider returning the general data and then the personal data
+        ### was that really it, here?
+        self.tempScore = 0# reset score for the next turn or roll
+        return observations
+    def advance(self, actions):
+        return self.advanceTime(actions, self.ruleset)
+    def roll(self, d:'int'):
+        return randint(0,d)
+    def decodeActs(self, inputs:'tuple(float)'):# decode action from floats
+        result = int()
+        if inputs[0] < 0.55:
+            if inputs[1] < 0.55:### IDLE
+                result = 0
+            else:# Neuron B active, Hold.
+                result = 2### anything else I need?
+        else:
+            if inputs[1] < 0.55:# Neuron A active, Roll.
+                result = 1
+            else:# Both Neurons Active
+                if self.roll(1):
+                    result = 1
+                else:
+                    result = 2
+        return result
 
 
 
@@ -32,8 +94,8 @@ class Pig(Env):
 def fitnessFun(genomes, config):
     """
     runs the simulation of the current population of
-    birds and sets their fitness based on the distance they
-    reach in the game.
+    *!(@&$*&#@ and sets their fitness based on the #*@^%&$%&^ they
+    reach in the *@^#%$.
     """
     global WIN, gen
     win = WIN

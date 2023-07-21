@@ -1,5 +1,10 @@
 # import pygame
 
+
+# so the Sim class calls one of the Game classes( which all inherit from the Env class.), but the advanceTime function is called where exactly??
+
+
+## what if the Env class could import from a variety of classes
 class Env:# all Games have this function which is called from the Sim class
     def advanceTime(self, actions:'list[int]', envRules:'function'):
         '''
