@@ -30,7 +30,7 @@ class Pig(Env):
         self.players.append(player)
     def ruleset(self, inputs:'list[tuple(float)]'):### a lot of this should be writen outside the environment... Only pass in decoded actions from the users?
         self.currentMove = inputs[self.turn]# find out who's turn it is and extract active player action
-            
+        ### define NN then come back
         for player in inputs:
             result = self.decodeActs(player)
             if result == 1:
@@ -39,11 +39,7 @@ class Pig(Env):
                     self.turn += 1### Im not sure that's all I had to do here...
                 else:# didn't roll 0
                     self.tempScore += tempN
-
-
             else:
-
-
                 self.players[self.turn] += self.tempScore
                 self.turn += 1
 
