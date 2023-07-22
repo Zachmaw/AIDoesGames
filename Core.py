@@ -13,6 +13,7 @@
 # Then Generates the next population of availiable Genomes.
 
 
+
 import pygame, sys
 from random import randint
 from random import choice
@@ -29,6 +30,35 @@ from random import randint, uniform
     # NeuNet
 # Genome
     # Gene?
+
+
+
+
+
+
+
+
+#######
+# from numpy import exp, array, random, dot
+# training_set_inputs = array([[0, 0, 1], [1, 1, 1], [1, 0, 1], [0, 1, 1]])
+# training_set_outputs = array([[0, 1, 1, 0]]).T
+# random.seed(1)
+# synaptic_weights = 2 * random.random((3, 1)) - 1
+# for iteration in xrange(10000):
+#     output = 1 / (1 + exp(-(dot(training_set_inputs, synaptic_weights))))
+#     synaptic_weights += dot(training_set_inputs.T, (training_set_outputs - output) * output * (1 - output))
+# print( 1 / (1 + exp(-(dot(array([1, 0, 0]), synaptic_weights)))))
+######
+class MyNeuralNet():
+    def __init__(self):
+        pass
+######
+
+
+
+
+
+
 
 
 
@@ -52,11 +82,6 @@ class Sim:
 
 
 
-# class MyNeuralNet():
-#     def __init__(self) -> None:
-#         pass
-
-
 class Genome:
     def __init__(self) -> None:
         pass
@@ -64,6 +89,7 @@ class Genome:
 class Agent:# Recieves rewards and observations, and returns an action
     def __init__(self, geneSeq:'Genome'=None) -> None:
         self.memory = {}
+        self.geneome = geneSeq
         if geneSeq:### Build a NN from a Genome to handle the object.
             pass
         else:# That there's a Human, probably.
@@ -85,67 +111,6 @@ class Agent:# Recieves rewards and observations, and returns an action
 
 
 
-
-# class SpriteSheet():
-#     def __init__(self, filename:'str'):
-#         try:
-#             self.sheet = pygame.image.load(os.path.join(img_dir, filename)).convert()
-#             self.filename = filename
-#         except pygame.error as e:
-#             print(f"Unable to load spritesheet image: {filename}")
-#             raise SystemExit(e)
-#     def image_at(self, rectangle, colorkey = None):# Load the image from x, y, x+offset, y+offset.
-#         rect = pygame.Rect(rectangle)
-#         image = pygame.Surface(rect.size).convert()
-#         image.blit(self.sheet, (0, 0), rect)
-#         if colorkey is not None:
-#             if colorkey == -1:
-#                 colorkey = image.get_at((0,0))
-#             image.set_colorkey(colorkey, pygame.RLEACCEL)
-#         return image
-#     def images_at(self, rects, colorkey = None):#Load a whole bunch of images and return them as a list.
-#         return [self.image_at(rect, colorkey) for rect in rects]
-#     def load_strip(self, rect, image_count, colorkey = None):#Load a whole strip of images, and return them as a list.
-#         tups = [(rect[0]+rect[2]*x, rect[1], rect[2], rect[3])
-#                 for x in range(image_count)]
-#         return self.images_at(tups, colorkey)
-#     def load_grid_images(self, num_rows, num_cols, x_margin=0, x_padding=0, y_margin=0, y_padding=0):#Load a grid of images. Assumes symmetrical padding on left and right. Calls self.images_at() to get list of images.
-#         sheet_rect = self.sheet.get_rect()
-#         sheet_width, sheet_height = sheet_rect.size
-#         x_sprite_size = ( sheet_width - 2 * x_margin - (num_cols - 1) * x_padding ) / num_cols# To calculate the size of each sprite, subtract the two margins,
-#         y_sprite_size = ( sheet_height - 2 * y_margin - (num_rows - 1) * y_padding ) / num_rows# and the padding between each row, then divide by num_cols.
-#         sprite_rects = []
-#         for row_num in range(num_rows):# Position of sprite rect is margin + one sprite size
-#             for col_num in range(num_cols):# and one padding size for each row. Same for y.
-#                 x = x_margin + col_num * (x_sprite_size + x_padding)
-#                 y = y_margin + row_num * (y_sprite_size + y_padding)
-#                 sprite_rect = (x, y, x_sprite_size, y_sprite_size)
-#                 sprite_rects.append(sprite_rect)
-#         grid_images = self.images_at(sprite_rects)
-#         print(f"Loaded {len(grid_images)} images from {self.filename[:-20]}.")
-#         return grid_images
-#     def fileNameQuery(self):
-#         return self.filename
-# def loadSSheets():
-#     '''
-#     make a sprite sheet object for each file listed
-#     where the file names determine how the image is disected.
-#     '''
-#     sheets = {}
-#     for ssFileName in SSFN:
-#         t = SpriteSheet(ssFileName)
-#         num_rows = int(ssFileName[-20:-18])
-#         num_cols = int(ssFileName[-18:-16])
-#         x_margin = int(ssFileName[-16:-13])
-#         x_padding = int(ssFileName[-13:-10])
-#         y_margin = int(ssFileName[-10:-7])
-#         y_padding = int(ssFileName[-7:-4])
-#         print(num_rows, num_cols, x_margin, x_padding, y_margin, y_padding, ssFileName[:-20])
-#         gridimg = t.load_grid_images(num_rows, num_cols, x_margin, x_padding, y_margin, y_padding)
-#         sheets[ssFileName[:-20]] = gridimg
-#     return sheets
-# SSFN = []# Buttons0212000000000000.png, GUI1815004004004004.png
-# allSpritesheets = loadSSheets()
 
 def get_input(vector:'pygame.math.Vector2'):
     keys = pygame.key.get_pressed()
@@ -174,7 +139,7 @@ def display_score(time_passed):
 
 def display_lives(num_lifes):
 	for life in range(num_lifes):
-		x = 20 + life * (icon_surf.get_width() + 4) 
+		x = 20 + life * (icon_surf.get_width() + 4)
 		y = SCREEN_SIZE[1] - 20
 		icon_rect = icon_surf.get_rect(bottomleft = (x,y))
 		win.blit(icon_surf, icon_rect)
@@ -206,17 +171,17 @@ broken_surf = pygame.image.load(os.path.join(img_dir, 'broken.png')).convert_alp
 
 # bg stars
 
-# spaceship 
-player_rect = player_surf.get_rect(center = (640,360))## was wrapped in an 'pygame.frect()' 
+# spaceship
+player_rect = player_surf.get_rect(center = (640,360))## was wrapped in an 'pygame.frect()'
 
 player_direction = pygame.math.Vector2()
 player_speed = 300
 
-# laser 
+# laser
 laser_speed = 500
 laser_data = []
 
-# meteor 
+# meteor
 meteor_data = []
 meteor_timer = pygame.USEREVENT
 pygame.time.set_timer(meteor_timer, 1500)
@@ -246,7 +211,7 @@ damage_sound.set_volume(0.5)
 game_music.play()
 
 while True:
-	# get delta time 
+	# get delta time
 	dt = clock.tick() / 1000
 
 	# event loop
@@ -266,19 +231,19 @@ while True:
 				meteor_speed = randint(300,600)
 				meteor_data.append({'rect': meteor_rect, 'direction': meteor_direction, 'speed': meteor_speed, 'dokill': False})
 
-	# bg color 
+	# bg color
 	win.fill('#3a2e3f')
 
 	# title screen
 	if game_over:
-		win.blit(broken_surf,broken_rect)	
-			
-		# text 
+		win.blit(broken_surf,broken_rect)
+
+		# text
 		text_surf = font.render(f'Your score: {score}', True, 'White')
 		text_rect = text_surf.get_rect(center = (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2 + 50))
 		win.blit(text_surf, text_rect)
 
-		# button 
+		# button
 		if restart_rect.collidepoint(pygame.mouse.get_pos()):
 			pygame.draw.rect(win, 'white', restart_rect.inflate(30,30),0,3)
 			win.blit(restart_surf_dark, restart_rect)
@@ -288,13 +253,13 @@ while True:
 				lifeCount = 3
 				start_time = pygame.time.get_ticks()
 
-				title_music.stop() 
+				title_music.stop()
 				game_music.play()
 		else:
 			win.blit(restart_surf, restart_rect)
 
 		pygame.draw.rect(win, 'white', restart_rect.inflate(30,30), 5,3)
-	
+
 	# game logic
 	else:
 		win.blit(star_bg_surf,(0,0))
@@ -302,14 +267,14 @@ while True:
 		score = pygame.time.get_ticks() - start_time
 		display_score(score)
 
-		# display laser 
+		# display laser
 		if laser_data:
 			for laser_dict in laser_data:
 				laser_dict['rect'].y -= laser_speed * dt
 				win.blit(laser_surf, laser_dict['rect'])
 			laser_data = [laser_dict for laser_dict in laser_data if laser_dict['rect'].y > -100]
 
-		# display meteor 
+		# display meteor
 		if meteor_data:
 			for meteor_dict in meteor_data:
 				meteor_dict['rect'].center += meteor_dict['direction'] * meteor_dict['speed'] * dt
@@ -324,7 +289,7 @@ while True:
 		# collision
 		if meteor_data:
 			for meteor_dict in meteor_data:
-				# player -> meteor  
+				# player -> meteor
 				if player_rect.colliderect(meteor_dict['rect']):
 					meteor_dict['dokill'] = True
 					lifeCount -= 1
@@ -346,7 +311,7 @@ while True:
 			laser_data = [laser_dict for laser_dict in laser_data if not laser_dict['dokill']]
 		# display life
 		display_lives(lifeCount)
-	# update frame 
+	# update frame
 	pygame.display.update()
 
 
@@ -354,7 +319,7 @@ while True:
 
 
 
-	
+
 # class Game:
 # 	def __init__(self):
 # 		pygame.init()
@@ -366,8 +331,8 @@ while True:
 # 		self.lasers = pygame.sprite.Group()
 # 		self.meteors = pygame.sprite.Group()
 # 		self.player = Player(self.all_sprites, (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] - 100), self.create_laser)
-	
-# 		# imports 
+
+# 		# imports
 # 		self.star_frames = import_folder('..\graphics\star')
 # 		self.explosion = import_folder('..\graphics\explosion')
 # 		self.meteor_surfaces = import_folder('..\graphics\meteors')
@@ -375,18 +340,18 @@ while True:
 # 		self.broken_surf = pygame.image.load('../graphics/broken.png').convert_alpha()
 # 		self.broken_rect = self.broken_surf.get_rect(center = (SCREEN_SIZE[0]/2, SCREEN_SIZE[1]/2 - 100))
 
-# 		# timer 
+# 		# timer
 # 		self.meteor_timer = pygame.USEREVENT + 1
 # 		pygame.time.set_timer(self.meteor_timer, 150)
-		
-# 		# bg stars 
+
+# 		# bg stars
 # 		for i in range(randint(50,70)):
 # 			AnimatedStar(self.all_sprites, self.star_frames)
 
 # 		# overlay
 # 		self.overlay = Overlay()
 
-# 		# score 
+# 		# score
 # 		self.score = 0
 # 		self.lifes = 3
 # 		self.start_time = 0
@@ -395,12 +360,12 @@ while True:
 # 		# font
 # 		self.font = pygame.font.Font(None, 40)
 
-# 		# restart button 
+# 		# restart button
 # 		self.restart_surf = self.font.render('Restart', True, TEXT_COLOR)
 # 		self.restart_rect = self.restart_surf.get_rect(center = (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] - 100))
 # 		self.restart_surf_dark = self.font.render('Restart', True, BG_COLOR)
 
-# 		# music 
+# 		# music
 # 		self.game_music = pygame.mixer.Sound('../audio/game_music.wav')
 # 		self.title_music = pygame.mixer.Sound('../audio/title_music.wav')
 # 		self.laser_sound = pygame.mixer.Sound('../audio/laser.wav')
@@ -413,12 +378,12 @@ while True:
 # 			self.title_music.play()
 
 # 	def create_laser(self, pos, direction):
-		
+
 # 		Laser((self.all_sprites, self.lasers), pos, direction)
 # 		self.laser_sound.play()
 
 # 	def collisions(self):
-		
+
 # 		# laser -> meteor
 # 		for laser in self.lasers:
 # 			if pygame.sprite.spritecollide(laser, self.meteors, True, pygame.sprite.collide_mask):
@@ -426,7 +391,7 @@ while True:
 # 				laser.kill()
 # 				self.explosion_sound.play()
 
-# 		# meteor -> player 
+# 		# meteor -> player
 # 		if pygame.sprite.spritecollide(self.player, self.meteors, True, pygame.sprite.collide_mask):
 # 			self.lifes -= 1
 # 			self.damage_sound.play()
@@ -439,7 +404,7 @@ while True:
 # 				self.player.rect.center = (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] - 100)
 
 # 				self.game_music.stop()
-# 				self.title_music.play() 
+# 				self.title_music.play()
 
 # 	def run(self):
 # 		while True:
@@ -451,16 +416,16 @@ while True:
 # 					Meteor((self.all_sprites, self.meteors), choice(self.meteor_surfaces))
 
 # 			self.display_surface.fill(BG_COLOR)
-			
+
 # 			if self.game_over:
-				
-# 				self.display_surface.blit(self.broken_surf,self.broken_rect)	
-# 				# text 
+
+# 				self.display_surface.blit(self.broken_surf,self.broken_rect)
+# 				# text
 # 				text_surf = self.font.render(f'Your score: {self.score}', True, TEXT_COLOR)
 # 				text_rect = text_surf.get_rect(center = (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2 + 50))
 # 				self.display_surface.blit(text_surf, text_rect)
 
-# 				# button 
+# 				# button
 # 				if self.restart_rect.collidepoint(pygame.mouse.get_pos()):
 # 					pygame.draw.rect(self.display_surface, TEXT_COLOR, self.restart_rect.inflate(30,30),0,3)
 # 					self.display_surface.blit(self.restart_surf_dark, self.restart_rect)
@@ -470,7 +435,7 @@ while True:
 # 						self.lifes = 3
 # 						self.start_time = pygame.time.get_ticks()
 
-# 						self.title_music.stop() 
+# 						self.title_music.stop()
 # 						self.game_music.play()
 # 				else:
 # 					self.display_surface.blit(self.restart_surf, self.restart_rect)
@@ -490,9 +455,7 @@ while True:
 # 				self.overlay.display_lifes(self.lifes)
 
 # 			pygame.display.update()
-			
+
 
 # game = Game()
 # game.run()
-
-
