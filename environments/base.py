@@ -5,6 +5,7 @@
 
 
 ## what if the Env class could import from a variety of classes
+# instead of Env being the parent class?
 class Env:# all Games have this function which is called from the Sim class
     def advanceTime(self, actions:'list[int]', envRules:'function'):
         '''
