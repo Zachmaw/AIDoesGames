@@ -1,16 +1,59 @@
-
+from codecs import decode
+import struct
 from numpy import exp, array, random, dot, exp2, tanh
+
+def bin_to_float(b):
+    """ Convert binary string to a float. """
+    bf = int_to_bytes(int(b, 2), 8)  # 8 bytes needed for IEEE 754 binary64.
+    return struct.unpack('>d', bf)[0]
+
+def int_to_bytes(n, length):  # Helper function
+    """ Int/long to byte string.
+
+        Python 3.2+ has a built-in int.to_bytes() method that could be used
+        instead, but the following works in earlier versions including 2.x.
+    """
+    return decode('%%0%dx' % (length << 1) % n, 'hex')[-length:]
+
+def float_to_bin(value):  # For testing.
+    """ Convert float to 64-bit binary string. """
+    [d] = struct.unpack(">Q", struct.pack(">d", value))
+    return '{:064b}'.format(d)
+
+
+
+
+
+# Genes are in hex string
+# 
+
+
 class NeuralNetwork():
-    def __init__(self, inputCount, genes):### just make every extra action neuron above what the Environment can handle an automatic, but small, penalty.
-        self.brain = list()
-        ##### HERE
+    # neurons have an ID and a bias, ID is merely the bias' index in genes[0]
+    def __init__(self, inputCount:'int', genes:'tuple(list[int], list[str])'):### just make every extra action neuron above what the Environment can handle an automatic, but small, penalty.
+        self.connections = list()# of connections
+        self.internalNeurons = genes[0]
 
 
-        # We model a single neuron, with 3 input connections and 1 output connection.
+        ### I need to know what number to pick up, how much to mess with it, and where to put it down.
+        for connection in genes[1]:
+            # decode the gene
+            self.connections.append(f'{connection:0>42b}')
+
+            ### source type (input/internal)
+            ### source neuron ID modulo source group
+            ### output type (internal/action)
+            ### 
+
+            
+
+
+
+
+        # We model a single neuron, with 3 input connections and 1 output.
         # We assign random weights to a 3 x 1 matrix, with values in the range -1 to 1
         # and mean 0.
         self.synaptic_weights = 2 * random.random((3, 1)) - 1
-    # The Sigmoid function, which describes an S shaped curve.
     # We pass the weighted sum of the inputs through this function to
     # normalise them between 0 and 1.
     def __sigmoid(self, x):
@@ -45,22 +88,46 @@ class NeuralNetwork():
         # Adjust the weights.
         self.synaptic_weights += adjustment
 
-    # The neural network thinks.
-    def think(self, inputs):
+    # forward pass
+    # # The neural network thinks.
+    def applyWeights(self, inputVector):
+        return dot(inputVector, self.synaptic_weights.transpose())
+    def think(self, inputVector):
         # Pass inputs through our neural network (our single output neuron).
-        ### I need to calculate the new state of each neuron in order
-        # one layer at a time, [0, ...].
-        for layerIter in range(self.brain):###
-            for neuron in self.brain[layerIter]:
-                tn = self.perceptron(inputs)
-                if layerIter == len(self.brain):# Is output layer
-                    result = self.__sigmoid(tn)
-                else:
-                    result = self.__tanh(tn)
+        ### I need to calculate the new state of each neuron in order one layer at a time, [0, ...].
+        for layerIter in range(self.brain):
+            for connection in self.brain[layerIter]:### I need to read to connection ()
+            tn = self.applyWeights(inputVector)
+
+            # Apply bias
+            ### + connection bias
+            # Apply activation function
+            if layerIter == len(self.brain):# Is output layer
+                result = self.__sigmoid(tn)
+            else:
+                result = self.__tanh(tn)
         return result
-    #forward pass
-    def perceptron(self, x):
-        return dot(x, self.synaptic_weights.T) + self.bias
+    
+
+    # BACKUP CODE
+    # def think(self, inputVector):
+    #     # Pass inputs through our neural network (our single output neuron).
+    #     ### I need to calculate the new state of each neuron in order one layer at a time, [0, ...].
+    #     for layerIter in range(self.brain):
+    #         for connection in self.brain[layerIter]:### I need to read to connection ()
+    #             tn = self.applyWeight(inputVector)
+
+    #             # Apply bias
+    #             ### + connection bias
+    #             # Apply activation function
+    #         if layerIter == len(self.brain):# Is output layer
+    #             result = self.__sigmoid(tn)
+    #         else:
+    #             result = self.__tanh(tn)
+    #     return result
+
+
+
 ################
     # class SigmoidNeuron:
     #   #intialization
@@ -171,8 +238,90 @@ if __name__ == "__main__":
     # Test the neural network with a new situation.
 
     print(f"Correct answer: \n{training_set_outputs}")
-    print(f"Final output: \n{neural_network.think(training_set_inputs)}")
+    print(f"Final answer: \n{neural_network.think(training_set_inputs)}")
     print(f"Considering new situation [1, 0, 0] -> ?: {neural_network.think(array([1, 0, 0]))}")
 ######
 
-# I'm certain we cant fully solve the problem presented with only one neuron
+# I'm certain we cant fully solve the problem presented in the new Situation with only one neuron
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# from numpy import sqrt
+
+
+# # DEFINE THE NETWORK
+
+# # Generate random numbers within a bounded normal distribution
+# # def truncated_normal(mean=0, sd=1, low=0, upp=10):
+# #     return truncnorm((low - mean) / sd, (upp - mean) / sd, loc=mean, scale=sd)
+
+# # Create the ‘Nnetwork’ class and define its arguments:
+# # Set the number of neurons/nodes for each layer
+# # and initialize the weight matrices:  
+# class Nnetwork:
+
+#     def __init__(self, 
+#                  no_of_in_nodes, 
+#                  no_of_out_nodes, 
+#                  no_of_hidden_nodes,
+#                  learning_rate):
+#         self.no_of_in_nodes = no_of_in_nodes
+#         self.no_of_out_nodes = no_of_out_nodes
+#         self.no_of_hidden_nodes = no_of_hidden_nodes
+#         self.learning_rate = learning_rate 
+#         self.create_weight_matrices()
+        
+#     def create_weight_matrices(self):
+#         """ A method to initialize the weight matrices of the neural network"""
+#         rad = 1 / sqrt(self.no_of_in_nodes)
+#         X = truncated_normal(mean=0, sd=1, low=-rad, upp=rad)
+#         self.weights_in_hidden = X.rvs((self.no_of_hidden_nodes, self.no_of_in_nodes))
+#         rad = 1 / sqrt(self.no_of_hidden_nodes)
+#         X = truncated_normal(mean=0, sd=1, low=-rad, upp=rad)
+#         self.weights_hidden_out = X.rvs((self.no_of_out_nodes, self.no_of_hidden_nodes))
+
+#     def train(self, input_vector, target_vector):
+#         pass # More work is needed to train the network
+            
+#     def run(self, input_vector):
+#         """
+#         running the network with an input vector 'input_vector'. 
+#         'input_vector' can be tuple, list or ndarray
+#         """
+#         # Turn the input vector into a column vector:
+#         input_vector = np.array(input_vector, ndmin=2).T
+#         # activation_function() implements the expit function,
+#         # which is an implementation of the sigmoid function:
+#         input_hidden = activation_function(self.weights_in_hidden @   input_vector)
+#         output_vector = activation_function(self.weights_hidden_out @ input_hidden)
+#         return output_vector 
+
+# # RUN THE NETWORK AND GET A RESULT
+
+# # Initialize an instance of the class:  
+# simple_network = Nnetwork(no_of_in_nodes=2, 
+#                                no_of_out_nodes=2, 
+#                                no_of_hidden_nodes=4,
+#                                learning_rate=0.6)
+
+# # Run simple_network for arrays, lists and tuples with shape (2):
+# # and get a result:
+# simple_network.run([(3, 4)])
+
+
+
+

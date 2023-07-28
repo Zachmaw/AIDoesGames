@@ -14,13 +14,10 @@
 
 
 
-import pygame, sys
-from random import randint
-from random import choice
 
 import pygame, os
 from sys import exit
-from random import randint, uniform
+from random import randint
 
 
 ### objects that need defenition
@@ -55,7 +52,28 @@ class MyNeuralNet():
 ######
 
 
+class Player:
+    def __init__(self) -> None:
 
+        pass
+
+    def getPressed(self):
+	    return pygame.key.get_pressed()
+	    
+
+
+class Genome:
+    def __init__(self) -> None:
+        pass
+
+class Agent:# Recieves rewards and observations, and returns an action
+    def __init__(self, geneSeq:'Genome'=None) -> None:
+        self.memory = {}
+        self.geneome = geneSeq
+        if geneSeq:### Build a NN from a Genome to handle the object.
+            pass
+        else:# That there's a Human, probably.
+            pass### Make the object recieve input from input devices( wait on the User)
 
 
 
@@ -64,7 +82,7 @@ class MyNeuralNet():
 
 
 class Sim:
-    def __init__(self, game:'class') -> None:
+    def __init__(self, game:'str') -> None:### game needs to be a string
         '''Initialize an environment for this simulation'''
         self.environment = game(players)## set to a user defined class which imports from Env
         self.envHistory = dict()### a place to store kept Environments by a name in str and list of settings?
@@ -80,20 +98,6 @@ class Sim:
             pass### ugh
         self.environment = newEnv
 
-
-
-class Genome:
-    def __init__(self) -> None:
-        pass
-
-class Agent:# Recieves rewards and observations, and returns an action
-    def __init__(self, geneSeq:'Genome'=None) -> None:
-        self.memory = {}
-        self.geneome = geneSeq
-        if geneSeq:### Build a NN from a Genome to handle the object.
-            pass
-        else:# That there's a Human, probably.
-            pass### Make the object recieve input from input devices( wait on the User)
 
 
 

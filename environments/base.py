@@ -2,11 +2,19 @@
 
 
 # so the Sim class calls one of the Game classes( which all inherit from the Env class.), but the advanceTime function is called where exactly??
+# The Simulation is the one who advances time in the environment by one step/turn when it has the responses from the Agents!
 
 
 ## what if the Env class could import from a variety of classes
 # instead of Env being the parent class?
-class Env:# all Games have this function which is called from the Sim class
+# I looked into variable class importing and found nothing. It's not worth my time.
+
+# All environments are either turn based or time based
+class Env:
+    def __init__(self, id):# The id is given to us from the Simulation
+        self.ready = False
+        self.id = id
+
     def advanceTime(self, actions:'list[int]', envRules:'function'):
         '''
         should take in a list of actions and\n
@@ -18,23 +26,41 @@ class Env:# all Games have this function which is called from the Sim class
         return envRules(actions)### make sure actions.len() can be varied between timesteps.(as long as len(actions) == len(agents))
 
 
-
-
-class GameObj:
-    def __init__(self, id, playerCount):### add the other atributes a game object would have
-        self.ready = False
-        self.id = id
-        self.playerCount = playerCount
+class TurnBased(Env):
+    def __init__(self, id) -> None:
+        super().__init__(id)
         self.tookTurn = {}
         self.moves = {}
-        self.wins = {}
-        for i in playerCount:
-            self.tookTurn[f'Player{str(i)}'] = False
-            self.moves[f'Player{str(i)}'] = None
-            self.wins[f'Player{str(i)}'] = 0
+
+
+class TimeBased(Env):
+    def __init__(self, id) -> None:
+        super().__init__(id)
+
+
+class GameObj(TurnBased):
+    def __init__(self, id):### add the other atributes a game object would have
+        super().__init__(id)
+        self.maxPlayers = 7# This game has a player limit
+        self.wins = {}# it also can be won.
         self.ties = 0# In case nobody could claim the game.
 
     def awaitPlayerConnections(self):
+        trying = True
+        while trying:
+            try:
+                playerCount = int(input('How many players?'))
+                if playerCount > self.maxPlayers:
+                    print(f"The number is too high! The highest number of players you can have in this environment is {self.maxPlayers}")
+                    Exception("The number is too high!(playerCount above maxPlayers)")
+                for i in playerCount:
+                    self.tookTurn[f'Player{str(i)}'] = False
+                    self.moves[f'Player{str(i)}'] = None
+                    self.wins[f'Player{str(i)}'] = 0
+                trying = False
+            except:
+                print('Please, try again.')
+        temp2 = input('')
         pass###
 
     def get_player_move(self, p):
