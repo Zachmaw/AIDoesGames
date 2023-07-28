@@ -25,7 +25,7 @@ def float_to_bin(value):  # For testing.
 
 
 # Genes are in hex string
-# 
+#
 
 
 class NeuralNetwork():
@@ -43,9 +43,9 @@ class NeuralNetwork():
             ### source type (input/internal)
             ### source neuron ID modulo source group
             ### output type (internal/action)
-            ### 
+            ###
 
-            
+
 
 
 
@@ -57,6 +57,7 @@ class NeuralNetwork():
     # We pass the weighted sum of the inputs through this function to
     # normalise them between 0 and 1.
     def __sigmoid(self, x):
+        '''retuns float in range[0,1]'''
         return 1 / (1 + exp(-x))
 
     # The derivative of the Sigmoid function.
@@ -66,6 +67,7 @@ class NeuralNetwork():
         return x * (1 - x)
 
     def __tanh(self, x, deriv = False):
+        '''retuns float in range[-1,1]'''
         if deriv == True:
             return (1 - (tanh(exp2(2) * x)))
           # return (exp(x) - exp(-x)) / (exp(x) + exp(-x))
@@ -95,19 +97,23 @@ class NeuralNetwork():
     def think(self, inputVector):
         # Pass inputs through our neural network (our single output neuron).
         ### I need to calculate the new state of each neuron in order one layer at a time, [0, ...].
-        for layerIter in range(self.brain):
-            for connection in self.brain[layerIter]:### I need to read to connection ()
-            tn = self.applyWeights(inputVector)
+        # but the neurons aren't in layers, there's just input/internal/action.
+        ### I need to, in order, update the states of the internal neurons so I can produce an output.
+        outputVector = list()
+        for connection in self.connections:### I need to read to connection ()
+            tempNum =
 
             # Apply bias
             ### + connection bias
             # Apply activation function
-            if layerIter == len(self.brain):# Is output layer
-                result = self.__sigmoid(tn)
+            if connection == len(self.brain):# Is output connection### line is wrong. Go based on if connection output is 0, not 1.
+                result = self.__sigmoid(tempNum)
             else:
-                result = self.__tanh(tn)
-        return result
-    
+                result = self.__tanh(tempNum)
+            index += 1
+
+        return outputVector# 'list[bool]'
+
 
     # BACKUP CODE
     # def think(self, inputVector):
@@ -271,20 +277,20 @@ if __name__ == "__main__":
 
 # # Create the ‘Nnetwork’ class and define its arguments:
 # # Set the number of neurons/nodes for each layer
-# # and initialize the weight matrices:  
+# # and initialize the weight matrices:
 # class Nnetwork:
 
-#     def __init__(self, 
-#                  no_of_in_nodes, 
-#                  no_of_out_nodes, 
+#     def __init__(self,
+#                  no_of_in_nodes,
+#                  no_of_out_nodes,
 #                  no_of_hidden_nodes,
 #                  learning_rate):
 #         self.no_of_in_nodes = no_of_in_nodes
 #         self.no_of_out_nodes = no_of_out_nodes
 #         self.no_of_hidden_nodes = no_of_hidden_nodes
-#         self.learning_rate = learning_rate 
+#         self.learning_rate = learning_rate
 #         self.create_weight_matrices()
-        
+
 #     def create_weight_matrices(self):
 #         """ A method to initialize the weight matrices of the neural network"""
 #         rad = 1 / sqrt(self.no_of_in_nodes)
@@ -296,10 +302,10 @@ if __name__ == "__main__":
 
 #     def train(self, input_vector, target_vector):
 #         pass # More work is needed to train the network
-            
+
 #     def run(self, input_vector):
 #         """
-#         running the network with an input vector 'input_vector'. 
+#         running the network with an input vector 'input_vector'.
 #         'input_vector' can be tuple, list or ndarray
 #         """
 #         # Turn the input vector into a column vector:
@@ -308,20 +314,16 @@ if __name__ == "__main__":
 #         # which is an implementation of the sigmoid function:
 #         input_hidden = activation_function(self.weights_in_hidden @   input_vector)
 #         output_vector = activation_function(self.weights_hidden_out @ input_hidden)
-#         return output_vector 
+#         return output_vector
 
 # # RUN THE NETWORK AND GET A RESULT
 
-# # Initialize an instance of the class:  
-# simple_network = Nnetwork(no_of_in_nodes=2, 
-#                                no_of_out_nodes=2, 
+# # Initialize an instance of the class:
+# simple_network = Nnetwork(no_of_in_nodes=2,
+#                                no_of_out_nodes=2,
 #                                no_of_hidden_nodes=4,
 #                                learning_rate=0.6)
 
 # # Run simple_network for arrays, lists and tuples with shape (2):
 # # and get a result:
 # simple_network.run([(3, 4)])
-
-
-
-
