@@ -1,6 +1,6 @@
 from codecs import decode
 import struct
-from numpy import exp, array, random, dot, exp2, tanh
+from numpy import exp, array, random, dot, exp2, tanh, zeros
 
 def bin_to_float(b):
     """ Convert binary string to a float. """
@@ -38,6 +38,7 @@ class NeuralNetwork():
         ### I need to know what number to pick up, how much to mess with it, and where to put it down.
         for connection in genes[1]:
             # decode the gene
+            print(f'{connection:0>42b}')
             self.connections.append(f'{connection:0>42b}')
 
             ### source type (input/internal)
@@ -54,9 +55,8 @@ class NeuralNetwork():
         # We assign random weights to a 3 x 1 matrix, with values in the range -1 to 1
         # and mean 0.
         self.synaptic_weights = 2 * random.random((3, 1)) - 1
-    # We pass the weighted sum of the inputs through this function to
-    # normalise them between 0 and 1.
-    def __sigmoid(self, x):
+
+    def __sigmoid(self, x):# You know what the Sigmoid function is...
         '''retuns float in range[0,1]'''
         return 1 / (1 + exp(-x))
 
@@ -94,14 +94,17 @@ class NeuralNetwork():
     # # The neural network thinks.
     def applyWeights(self, inputVector):
         return dot(inputVector, self.synaptic_weights.transpose())
+    def perceptron(self, vectorInput, weights, bias, finalLayer:'bool'):
+        pass
     def think(self, inputVector):
-        # Pass inputs through our neural network (our single output neuron).
+        # Pass inputs through our neural network.
         ### I need to calculate the new state of each neuron in order one layer at a time, [0, ...].
         # but the neurons aren't in layers, there's just input/internal/action.
-        ### I need to, in order, update the states of the internal neurons so I can produce an output.
+        ### I need to, in order, update the states of the internal neurons so I can produce an output vector for the whole network.
         outputVector = list()
-        for connection in self.connections:### I need to read to connection ()
-            tempNum =
+        tempVector = list()
+        for connection in self.connections:### I need to read to connection (huh?)
+            tempNum = 0##### placeholder, was an error.
 
             # Apply bias
             ### + connection bias
@@ -113,6 +116,46 @@ class NeuralNetwork():
             index += 1
 
         return outputVector# 'list[bool]'
+
+
+
+
+
+
+
+
+
+
+
+
+##### TRYING TO TAKE INSPIRATION FROM THIS BUT I CANT UNDERSTAND IT
+# class Perceptron:
+#     def __init__(self, learning_rate, epochs):
+#         self.weights = None
+#         self.bias = None
+#         self.learning_rate = learning_rate
+#         self.epochs = epochs
+
+#     def fit(self, X, y):
+#         n_features = X.shape[1]
+#         self.weights = zeros((n_features))# Initializing weights and bias
+#         self.bias = 0
+#         for epoch in range(self.epochs):
+#             # Traversing through the entire training set
+#             for i in range(len(X)):
+#                 z = dot(X, self.weights) + self.bias # Finding the dot product and adding the bias
+#                 y_pred = self.activation(z) # Passing through an activation function
+#                 #Update weights and bias
+#                 self.weights = self.weights + self.learning_rate * (y[i] - y_pred[i]) * X[i]
+#                 self.bias = self.bias + self.learning_rate * (y[i] - y_pred[i])
+#         return self.weights, self.bias
+
+#     def predict(self, X):
+#         z = dot(X, self.weights) + self.bias
+#         return self.activation(z)
+
+
+
 
 
     # BACKUP CODE
@@ -142,10 +185,10 @@ class NeuralNetwork():
     #     self.b = None
     #   #forward pass
     #   def perceptron(self, x):
-    #     return np.dot(x, self.w.T) + self.b
+    #     return dot(x, self.w.T) + self.b
 
     #   def sigmoid(self, x):
-    #     return 1.0/(1.0 + np.exp(-x))
+    #     return 1.0/(1.0 + exp(-x))
     #   #updating the gradients using mean squared error loss
     #   def grad_w_mse(self, x, y):
     #     y_pred = self.sigmoid(self.perceptron(x))
@@ -177,7 +220,7 @@ class NeuralNetwork():
 
     #     # initialise w, b
     #     if initialise:
-    #       self.w = np.random.randn(1, X.shape[1])
+    #       self.w = random.randn(1, X.shape[1])
     #       self.b = 0
 
     #     if display_loss:
@@ -219,7 +262,7 @@ class NeuralNetwork():
     #     for x in X:
     #       y_pred = self.sigmoid(self.perceptron(x))
     #       Y_pred.append(y_pred)
-    #     return np.array(Y_pred)
+    #     return array(Y_pred)
 ###############################
 if __name__ == "__main__":
 
@@ -309,7 +352,7 @@ if __name__ == "__main__":
 #         'input_vector' can be tuple, list or ndarray
 #         """
 #         # Turn the input vector into a column vector:
-#         input_vector = np.array(input_vector, ndmin=2).T
+#         input_vector = array(input_vector, ndmin=2).T
 #         # activation_function() implements the expit function,
 #         # which is an implementation of the sigmoid function:
 #         input_hidden = activation_function(self.weights_in_hidden @   input_vector)
