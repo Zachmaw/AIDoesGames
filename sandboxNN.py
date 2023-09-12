@@ -1,6 +1,6 @@
 from codecs import decode
 import struct
-from numpy import exp, array, random, dot, exp2, tanh, zeros
+from numpy import exp, array, random, dot, exp2, tanh, zeros, heaviside, transpose
 
 def bin_to_float(b):
     """ Convert binary string to a float. """
@@ -65,13 +65,26 @@ class NeuralNetwork():
     # It indicates how confident we are about the existing weight.
     def __sigmoid_derivative(self, x):
         return x * (1 - x)
-
     def __tanh(self, x, deriv = False):
         '''retuns float in range[-1,1]'''
         if deriv == True:
             return (1 - (tanh(exp2(2) * x)))
           # return (exp(x) - exp(-x)) / (exp(x) + exp(-x))
         return tanh(x)
+    def __binaryStep(self, x):
+        ''' It returns '0' is the input is less then zero otherwise it returns one '''
+        return heaviside(x,1)
+    def __RELU(self, x):
+        ''' It returns zero if the input is less than zero otherwise it returns the given input. '''
+        result = []
+        for i in x:
+            if i < 0:
+                result.append(0)
+            else:
+                result.append(i)
+        return result
+    
+    ### add bool activation function
 
     # We train the neural network through a process of trial and error.
     # Adjusting the synaptic weights each time.
@@ -92,29 +105,29 @@ class NeuralNetwork():
 
     # forward pass
     # # The neural network thinks.
-    def applyWeights(self, inputVector):
-        return dot(inputVector, self.synaptic_weights.transpose())
-    def perceptron(self, vectorInput, weights, bias, finalLayer:'bool'):
-        pass
-    def think(self, inputVector):
+    def perceptron(self, vectorInput:'list[float]', weights:'list[float]', bias:'float', finalLayer:'bool'):
+        workingVector = dot(vectorInput, weights.transpose()) + bias
+        if finalLayer:# activation func
+            return self.__binaryStep(workingVector)
+        else:
+            return self.__tanh(workingVector)
+
+    def think(self, inputVector):# input shape, list[float]; return shape, list[bool]
         # Pass inputs through our neural network.
         ### I need to calculate the new state of each neuron in order one layer at a time, [0, ...].
         # but the neurons aren't in layers, there's just input/internal/action.
-        ### I need to, in order, update the states of the internal neurons so I can produce an output vector for the whole network.
-        outputVector = list()
-        tempVector = list()
-        for connection in self.connections:### I need to read to connection (huh?)
-            tempNum = 0##### placeholder, was an error.
-
-            # Apply bias
-            ### + connection bias
-            # Apply activation function
-            if connection == len(self.brain):# Is output connection### line is wrong. Go based on if connection output is 0, not 1.
-                result = self.__sigmoid(tempNum)
-            else:
-                result = self.__tanh(tempNum)
-            index += 1
-
+        ### I need to, in order, update the states of the internal neurons so I can produce an output vector from the whole network. [0,0,1,1,0,1,0,1,1,0] or something
+        tempVector = list()# to hold the data as it moves along the brain
+        tempVector2 = list()
+        for connection in self.connections:### I need to read to connection (huh?)# for each neuron in the brain, perceptron.(inputs times weights added up plus bias then activate.)
+            
+            
+            ### PERCEPTRON, but who goes first? how to keep track? I just need a full set of numbers for each neuron to process...
+            
+            
+            
+            
+            pass
         return outputVector# 'list[bool]'
 
 
@@ -162,8 +175,9 @@ class NeuralNetwork():
     # def think(self, inputVector):
     #     # Pass inputs through our neural network (our single output neuron).
     #     ### I need to calculate the new state of each neuron in order one layer at a time, [0, ...].
-    #     for layerIter in range(self.brain):
+    #     for layerIter in self.brain:
     #         for connection in self.brain[layerIter]:### I need to read to connection ()
+                # perceptron
     #             tn = self.applyWeight(inputVector)
 
     #             # Apply bias
@@ -334,14 +348,14 @@ if __name__ == "__main__":
 #         self.learning_rate = learning_rate
 #         self.create_weight_matrices()
 
-#     def create_weight_matrices(self):
-#         """ A method to initialize the weight matrices of the neural network"""
-#         rad = 1 / sqrt(self.no_of_in_nodes)
-#         X = truncated_normal(mean=0, sd=1, low=-rad, upp=rad)
-#         self.weights_in_hidden = X.rvs((self.no_of_hidden_nodes, self.no_of_in_nodes))
-#         rad = 1 / sqrt(self.no_of_hidden_nodes)
-#         X = truncated_normal(mean=0, sd=1, low=-rad, upp=rad)
-#         self.weights_hidden_out = X.rvs((self.no_of_out_nodes, self.no_of_hidden_nodes))
+    # def create_weight_matrices(self):
+    #     """ A method to initialize the weight matrices of the neural network"""
+    #     rad = 1 / sqrt(self.no_of_in_nodes)
+    #     X = truncated_normal(mean=0, sd=1, low=-rad, upp=rad)
+    #     self.weights_in_hidden = X.rvs((self.no_of_hidden_nodes, self.no_of_in_nodes))
+    #     rad = 1 / sqrt(self.no_of_hidden_nodes)
+    #     X = truncated_normal(mean=0, sd=1, low=-rad, upp=rad)
+    #     self.weights_hidden_out = X.rvs((self.no_of_out_nodes, self.no_of_hidden_nodes))
 
 #     def train(self, input_vector, target_vector):
 #         pass # More work is needed to train the network
@@ -370,3 +384,18 @@ if __name__ == "__main__":
 # # Run simple_network for arrays, lists and tuples with shape (2):
 # # and get a result:
 # simple_network.run([(3, 4)])
+
+
+
+
+
+
+
+
+
+# Just thought:
+# put the agent in a client connection for a socket based system
+# so the environment runs in the server.
+# what does the environment do again?
+# cuz the agents recieve observations( in the form of a list of floats)
+# and return/send outputs( as a list of bool?)

@@ -1,4 +1,8 @@
 
+from numpy import transpose, random
+
+
+
 def diffDetect(a, b):
     '''can take string or list
     '''
@@ -34,3 +38,9 @@ def diffDetect(a, b):
 
 
 # print(diffDetect('000000101010111100000100100011111011111111', '001010101111000001001000111110111111111111'))
+
+
+
+
+a = random.random((3, 1)) - 1
+print(a.transpose().transpose())
