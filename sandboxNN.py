@@ -30,16 +30,49 @@ def float_to_bin(value):  # For testing.
 
 class NeuralNetwork():
     # neurons have an ID and a bias, ID is merely the bias' index in genes[0]
-    def __init__(self, inputCount:'int', genes:'tuple(list[int], list[str])'):### just make every extra action neuron above what the Environment can handle an automatic, but small, penalty.
-        self.connections = list()# of connections
-        self.internalNeurons = genes[0]
+    def __init__(self, inputCount:'int', genes:'tuple(list[float], list[str])'):### just make every extra action neuron above what the Environment can handle an automatic, but small, penalty.
+        self.connections = list()
+        self.internalNeurons = list()
+        for i in range(len(genes[0])):# however many bias' there are is how many internal neurons there are
+            self.internalNeurons.append(genes[0][i], list())# internal neuron with index as key and contains bias and workingInputs
+        
 
 
         ### I need to know what number to pick up, how much to mess with it, and where to put it down.
-        for connection in genes[1]:
-            # decode the gene
-            print(f'{connection:0>42b}')
-            self.connections.append(f'{connection:0>42b}')
+        #                  input or internal     , conection/weight        , and   internal or output?
+
+
+        other = list()
+        lastLayer = list()
+
+
+        # decode the genome
+        
+        for i in range(len(genes[1])):### TEST THIS BLOCK rigorously# run through all the genes in the genome
+            bitstring = f'{genes[1][i]}'# retrieves the bitstring
+            self.connections.append((# disect it
+                bitstring[0],
+                int(bitstring[1:8], 2),
+                bitstring[8],
+                int(bitstring[9:16], 2),
+                int(bitstring[16:31], 2) / 8000
+            ))
+            ### put the connections in thinking order.
+            if bitstring[8] == '0':# goes to output node##### idk bro, just where I left off.
+                lastLayer.append(i)
+            else:# goes to internal
+                other.append(i)
+            ### then store it.
+            # so if I'm putting all the connections into a dictionary( so that I can access( without messing with binary) the info. Ya'know, decode.)
+            # What info should I use to key them?
+            
+            # you find out how many connections you have to output nodes, setting them to the side. Then find from the remainder which ones have those connections inputs as their outputs.
+
+
+
+
+
+
 
             ### source type (input/internal)
             ### source neuron ID modulo source group
@@ -47,6 +80,19 @@ class NeuralNetwork():
             ###
 
 
+            ### PERCEPTRON, but who goes first? how to keep track? I just need a full set of numbers for each neuron to process...
+            # so I have two options, right?
+            # the one where each layer is calculated before moving to the next
+            # and the way that guy did it... 
+            # where instead of the inputs being passed down the layers and transformed along the way...
+            # instead, the inputs are just there and the connections are calculated in order.
+            # so on init:
+            # decode genome
+            # get output count, count how many genes specify a connection to an output neuron.
+            # put them in a variable, makes it easy to get len.
+            # so reversed layer construction? bottom up?
+            # then I'd have what exactly?
+            # I wouldnt be able to update the inputs mid pass because they might be used by an output neuron directly.
 
 
 
@@ -56,13 +102,11 @@ class NeuralNetwork():
         # and mean 0.
         self.synaptic_weights = 2 * random.random((3, 1)) - 1
 
-    def __sigmoid(self, x):# You know what the Sigmoid function is...
+    def __sigmoid(self, x):# You know what the Sigmoid function is... :( not anymore... Sig and Tanh take (-4,4) but Sigm gives (0,1) and Tanh gives (-1,1)
+        # The derivative of the Sigmoid function.
+        # It indicates how confident we are about the existing weight. The closer to the ends, the less confident.
         '''retuns float in range[0,1]'''
         return 1 / (1 + exp(-x))
-
-    # The derivative of the Sigmoid function.
-    # This is the gradient of the Sigmoid curve.
-    # It indicates how confident we are about the existing weight.
     def __sigmoid_derivative(self, x):
         return x * (1 - x)
     def __tanh(self, x, deriv = False):
@@ -84,45 +128,53 @@ class NeuralNetwork():
                 result.append(i)
         return result
     
-    ### add bool activation function
 
-    # We train the neural network through a process of trial and error.
-    # Adjusting the synaptic weights each time.
-    def trainWeights(self, prediction_result, bestOutcome):
-        '''Calculates the error in thinking and\n
-        adjusts weights accordingly'''
 
-        # Calculate the difference between the desired output and the expected output).
-        error = bestOutcome - prediction_result
-
-        # Multiply the error by the input and again by the gradient of the Sigmoid curve.
-        # This means less confident weights are adjusted more.
-        # This means inputs, which are zero, do not cause changes to the weights.
-        adjustment = dot(prediction_result.T, error * self.__sigmoid_derivative(prediction_result))
-
-        # Adjust the weights.
-        self.synaptic_weights += adjustment
-
-    # forward pass
-    # # The neural network thinks.
-    def perceptron(self, vectorInput:'list[float]', weights:'list[float]', bias:'float', finalLayer:'bool'):
-        workingVector = dot(vectorInput, weights.transpose()) + bias
-        if finalLayer:# activation func
-            return self.__binaryStep(workingVector)
-        else:
-            return self.__tanh(workingVector)
+    # # forward pass
+    # # # The neural network thinks.
+    # def perceptron(self, vectorInput:'list[float]', weights, bias:'float', finalLayer:'bool'):
+    #     workingVector = dot(vectorInput, weights.transpose()) + bias
+    #     if finalLayer:# activation func
+    #         return self.__binaryStep(workingVector)
+    #     else:
+    #         return self.__tanh(workingVector) 
 
     def think(self, inputVector):# input shape, list[float]; return shape, list[bool]
         # Pass inputs through our neural network.
         ### I need to calculate the new state of each neuron in order one layer at a time, [0, ...].
         # but the neurons aren't in layers, there's just input/internal/action.
         ### I need to, in order, update the states of the internal neurons so I can produce an output vector from the whole network. [0,0,1,1,0,1,0,1,1,0] or something
-        tempVector = list()# to hold the data as it moves along the brain
-        tempVector2 = list()
-        for connection in self.connections:### I need to read to connection (huh?)# for each neuron in the brain, perceptron.(inputs times weights added up plus bias then activate.)
-            
-            
+        for weight in self.connections:### should be int from string of binary.### should be ordered.
+            # find out what you are mutiplying by this weight
+            if weight[0]:# is internal neuron input
+                workingInput = self.internalNeurons[int(weight[1:8], 2)][1]# get input from list of internal neurons
+                # but I'm not multiplying the bias by the weight. I'm multiplying the inputs by the weight... whatever resuly should be stored in the neuron from it's activation func.
+            else:# is input neuron
+                workingInput = inputVector[int(weight[1:8], 2)]
+            ##### x = int(weight[16:31], 2) / 8000
+            result = workingInput * x
+            # then just add that to the bias of the output node, right? well  dont want to overwrite the bias...
+            # so I have to store it so that all the inputs to a node can be added up
+
+
+
             ### PERCEPTRON, but who goes first? how to keep track? I just need a full set of numbers for each neuron to process...
+            # so I have two options, right?
+            # the one where each layer is calculated before moving to the next
+            # and the way that guy did it... 
+            # where instead of the inputs being passed down the layers and transformed along the way...
+            # instead, the inputs are just there and the connections are calculated in order.
+            # so on init:
+            # decode genome
+            # get output count, count how many genes specify a connection to an output neuron.
+            # put them in a variable, makes it easy to get len.
+            # so reversed layer construction? bottom up?
+            # then I'd have what exactly?
+            # I wouldnt be able to update the inputs mid pass because they might be used by an output neuron directly.
+            #
+            # When you're working with connections instead of nodes, you only have one weight at a time to deal with.
+            # for that reason, cant use perceptron node. Must order the connections and something them one at a time.
+            # in init, put the internal nodes needed in a list so I can store their bias'.
             
             
             
