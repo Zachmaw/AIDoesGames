@@ -2,21 +2,39 @@
 from numpy import transpose, random
 
 
+def bin_to_float(b):
+    """ Convert binary string to a float. """
+    bf = int.to_bytes(int(b, 2), 8)  # 8 bytes needed for IEEE 754 binary64.
+    return struct.unpack('>d', bf)[0]
+
+# def int_to_bytes(n, length):  # Helper function
+#     """ Int/long to byte string.
+
+#         Python 3.2+ has a built-in int.to_bytes() method that could be used
+#         instead, but the following works in earlier versions including 2.x.
+#     """
+#     return codecs.decode('%%0%dx' % (length << 1) % n, 'hex')[-length:]
+
+def float_to_bin(value):  # For testing.
+    """ Convert float to 64-bit binary string. """
+    [d] = struct.unpack(">Q", struct.pack(">d", value))
+    return '{:064b}'.format(d)
+
 
 def diffDetect(a, b):
-    '''can take string or list
+    '''can take itterable
     '''
-    temp = str()
-    if len(a) < len(b):
-        a, b = b, a
-    for i in range(len(a)-len(b)):
-        temp += '0'
+    tempString = str()
+    if len(a) < len(b):# if second item longer,
+        a, b = b, a# swap 'em.
+    for i in range(len(a)-len(b)):# buffer the temp string based on dif between item lengths.
+        tempString += '0'
     for i in range(len(b)):
         if a[i] == b[i]:
-            temp += '0'
+            tempString += '0'
         else:
-            temp += '1'
-    return temp
+            tempString += '1'
+    return tempString
 
 
 # from numpy import random
@@ -33,6 +51,7 @@ def diffDetect(a, b):
 
 
 # print(diffDetect('000000101010111100000100100011111011111111', '001010101111000001001000111110111111111111'))
+
 
 
 
