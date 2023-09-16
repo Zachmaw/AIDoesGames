@@ -19,132 +19,19 @@ from numpy import exp, array, random, dot, exp2, tanh, zeros, heaviside, transpo
 # but the simulation should handle mutations
 
 
+
+def perceptron(node:'tuple(list[float], float)', activationFuncOfChoice):# AKA, it shouldn't have an ID by this point. No lookups.
+    tempN = float()# add up the inputs which are already stored
+    for flo in node[0]:
+        tempN += flo
+    tempN += node[1]# add bias
+    return activationFuncOfChoice(tempN)# Activate.
+
 class NeuralNetwork():
     # neurons have an ID and a bias.
     # For Internal Nodes, ID is the node's ID as a key in self.internalNodes:'dict'
     # For Output Nodes, ID is merely the node's index in self.outputNodes:'list'
-    def __init__(self, inputCount:'int', outputCount:'int', genes:'tuple(list[float], list[str])'):### just make every extra action neuron above what the Environment can handle an automatic, but small, penalty.(Effective blindness, energy cost, ect.)
-        self.connections = list()
-        self.internalNodes = dict()
-        self.outputNodes = list()
-        # These two lists together represent the completed brain.
-        self.layersSynapse = list()
-        self.nodeLayerStructure = list()# of list of int representing IDs in layers.
-
-
-
-        ### The Biasses list includes output and internal neurons. How do I differentiate on the initial list? OutputCout is just the same thing as BiasListLen - internalNeurons, so if I find out how many internal neurons there are some other way...
-        #### self.outputNodes =
-        # internal neuron as tuple and contains workingInputs and bias
-        # internal neuron as tuple and contains workingInputs and bias.
-
-
-
-        for i in range(outputCount):# Build the output nodes.
-            self.outputNodes.append((list(), genes[0][i]))# Shape: tuple(int(ID),tuple(list[float], float))
-            #                          ID      , inputs, grab the first outputCount biasses leaving the rest for internals.
-            pass### is that it? That's all I needed?
-
-
-
-
-
-        ### I need to know what number to pick up, how much to mess with it, and where to put it down.
-        #                  input or internal     , conection/weight        , and   internal or output?
-
-
-        # decode the genome and build the brain layer by layer( of synapses, not neurons.)
-        # We are decoding ALL the genes as weights and storing them in self.connections
-        backBurner = list()
-        workingLayer = list()
-        for i in range(len(genes[1])):### TEST (all of it, but specifically )THIS BLOCK rigorously# run through all the genes in the genome# Decode all the connections into tuples.
-            bitstring = f'{genes[1][i]}'# retrieves the bitstring
-            decoded = (# disect it
-                int(bitstring[0]),# 0 is inputInput, 1 is internal input.
-                int(bitstring[1:8], 2),# Specify which node by its ID in that group.
-                int(bitstring[8]),# 0 is output, 1 is internal.
-                int(bitstring[9:16], 2),# Specify which.
-                int(bitstring[16:31], 2) / 8000# the weight.
-            )# shape:'tuple(bin, int, bin int, float)
-            self.connections.append(decoded)# add it to totalConnections for energy tracking later
-            # you find out how many connections you have to output nodes, placing them in the final layer of the Net, setting the rest to the side for now.
-            if decoded[2]:# if the output is an internal node
-                if any(decoded[3] == id for id in self.internalNodes):# Check if that ID is already in the list.
-                    pass# Do nothing
-                else:# and if not, init it!## Can't I remove these couple of lines if I change it to "if not any(..."?
-                    self.internalNodes[decoded[3]] = (list(), genes[0][i])# Shape: tuple(int(ID),tuple(list[float(weighted results)], float(bias)))# generate node
-                backBurner.append(decoded)# then throw it on the...# add connection to location
-            else:# goes to output node.
-                if decoded[3] < outputCount:# if that int matches a real output ID## I don't need to actually do anything with the specified output node *here*, do I?
-                    workingLayer.append(decoded)# it goes in the last layer. Otherwise, pruned.
-
-
-        if workingLayer.__len__() == 0:# no synapses coupled with the output layer... Brilliant.
-            ### possibly find a way to have *this* version(self) generate a just an empty output vector always. nahhh maybe...
-            ### make sure the think function is alright with handling the output nodes at the very least, and without inputs if needed.
-            # well surely not all output nodes are going to have connections
-            pass
-        self.layersSynapse.append(workingLayer)
-        if len(backBurner) >= 1:# That's not the whole brain, there's another layer.
-            nonFinalLayerConstruction = True
-        else:
-            nonFinalLayerConstruction = False
-        workingIter = 0
-        lastLayerInputIDs = list()
-        ### populate lastLayerInputIDs
-        ##### I STG I was trying to do something important +- 10 lines of here... Wow, that's helpful... Did it have to do with activation functions?
-        ### Then find from the remainder which ones have those connections' input nodes as their outputs. Setting them as the next from last layer. Repeat until...? No connections can be made for a layer.
-        while nonFinalLayerConstruction:
-            workingLayer = list()
-            thisLayerInputIDs = list()
-            for connection in self.layersSynapse[workingIter]:# from the previous layer of connections...# If it's not on the list,add it.
-                if not any(f"{connection[0]}:{connection[1]}" == x for x in thisLayerInputIDs):# copy only the unique IDs
-                    thisLayerInputIDs.append(f"{connection[0]}:{connection[1]}")# ...read out all the input locations.( to a list.)
-                    if any(f"{connection[0]}:{connection[1]}" == x for x in lastLayerInputIDs):# if current input ID is also an input in the previous layer, promote it.
-                        del self.nodeLayerStructure[workingIter][connection[1]]# remove specifically the node ID from the previous layer of nodeLayerStructure.
-
-
-
-
-
-                if connection[0]:# is internal input
-                    self.nodeLayerStructure[workingIter + 1].append(connection[1])
-            for connection in backBurner:# for every connection in the back burner# Make the next layer
-                if any(f"{connection[2]}:{connection[3]}" == x for x in lastLayerInputIDs):# if the connections' output matches the input from a connection in the previous layer:
-                    workingLayer.append(connection)### it is part of the next layer.
-                    pass## Pretty sure that's all I need here...
-            if not workingLayer:# Layer was empty
-                nonFinalLayerConstruction = False# Brain finished
-            else:
-                self.layersSynapse.append(workingLayer)
-            lastLayerInputIDs = thisLayerInputIDs
-            workingIter += 1
-        self.layersSynapse.reverse()
-        self.nodeLayerStructure.reverse()
-
-        # for layer in self.layers:
-        #     for connection in layer:# vyvle through all the connections in self.brain
-        #         if connection
-
-
-
-
-        # so on init:
-        # decode genome
-        # get output count, count how many genes specify a connection to an output neuron.
-        #
-        # so reversed layer construction? bottom up?
-        # then I'd have what exactly?
-        # I wouldnt be able to update the inputs mid pass because they might be used by an output neuron directly.
-
-
-
-
-        # # We model a single neuron, with 3 input connections and 1 output.
-        # # We assign random weights to a 3 x 1 matrix, with values in the range -1 to 1
-        # # and mean 0.
-        # self.synaptic_weights = 2 * random.random((3, 1)) - 1
-
+    
     def __sigmoid(self, x):# You know what the Sigmoid function is... :( not anymore... Sig and Tanh take (-4,4) but Sigm gives (0,1) and Tanh gives (-1,1)
         # The derivative of the Sigmoid function.
         # It indicates how confident we are about the existing weight. The closer to the ends, the less confident.
@@ -171,11 +58,182 @@ class NeuralNetwork():
                 result.append(i)
         return result
 
+    def __init__(self, inputCount:'int', outputCount:'int', genes:'tuple(list[float], list[str])'):### just make every extra action neuron above what the Environment can handle an automatic, but small, penalty.(Effective blindness, energy cost, ect.)
+        self.synapsesForCostCounting = list()
+        self.internalNodes = dict()
+        self.outputNodes = list()# Shape: list(int(ID), tuple(list[float(results from weight multiplications)], float(node bias)))
+        # These two lists together represent the completed brain.
+        self.layersSynapse = list()
+        self.nodeLayerStructure = list()# of list of int representing IDs in layers.
+        self.hasNodeOverConn = False
+
+
+
+        ### The Biasses list includes output and internal neurons. How do I differentiate on the initial list? OutputCout is just the same thing as BiasListLen - internalNeurons, so if I find out how many internal neurons there are some other way...
+        #### self.outputNodes =
+        # internal neuron as tuple and contains workingInputs and bias
+        # internal neuron as tuple and contains workingInputs and bias.
+
+
+
+        for i in range(outputCount):# Build the output nodes.
+            self.outputNodes.append((list(), genes[0][i]))# self.outputNodes
+            #                          ID      , inputs, grab the first outputCount biasses leaving the rest for internals.
+            pass### is that it? That's all I needed?
+
+
+
+
+
+        ### I need to know what number to pick up, how much to mess with it, and where to put it down.
+        #                  input or internal     , conection/weight        , and   internal or output?
+
+
+        # decode the genome and build the brain layer by layer( of synapses, not neurons.)
+        # We are decoding ALL the genes as weights and storing them in self.connections
+        backBurner = list()
+        workingLayerSynapses = list()
+        for i in range(len(genes[1])):### TEST (all of it, but specifically )THIS BLOCK rigorously# run through all the genes in the genome# Decode all the connections into tuples.
+            bitstring = f'{genes[1][i]}'# retrieves the bitstring
+            decoded = (# disect it
+                int(bitstring[0]),# 0 is inputInput, 1 is internal input.
+                int(bitstring[1:8], 2),# Specify which node by its ID in that group.
+                int(bitstring[8]),# 0 is output, 1 is internal.
+                int(bitstring[9:16], 2),# Specify which.
+                int(bitstring[16:31], 2) / 8000# the weight.
+            )# shape:'tuple(bin, int, bin int, float)
+            self.synapsesForCostCounting.append(decoded)# add it to totalConnections for energy tracking later
+            # you find out how many connections you have to output nodes, placing them in the final layer of the Net, setting the rest to the side for now.
+            if decoded[2]:# if the output is an internal node
+                if any(decoded[3] == id for id in self.internalNodes):# Check if that ID is already in the list.
+                    pass# Do nothing
+                else:# and if not, init it!## Can't I remove these couple of lines if I change it to "if not any(..."?
+                    self.internalNodes[decoded[3]] = (list(), genes[0][i])# Shape: tuple(int(ID),tuple(list[float(weighted results)], float(bias)))# generate node
+                backBurner.append(decoded)# then throw it on the...# add connection to location
+            else:# goes to output node.
+                if decoded[3] < outputCount:# if that int matches a real output ID## I don't need to actually do anything with the specified output node *here*, do I?
+                    workingLayerSynapses.append(decoded)# it goes in the last layer. Otherwise, pruned.
+
+
+        if workingLayerSynapses.__len__() == 0:# no synapses coupled with the output layer... Brilliant.
+            ### possibly find a way to have *this* version(self) generate a just an empty output vector always. nahhh maybe...
+            ### make sure the think function is alright with handling the output nodes at the very least, and without inputs if needed.
+            # well surely not all output nodes are going to have connections
+            pass
+        self.layersSynapse.append(workingLayerSynapses)
+        if len(backBurner) >= 1:# That's not the whole brain, there's another layer.
+            nonFinalLayerConstruction = True
+        else:
+            nonFinalLayerConstruction = False
+        workingIter = 0
+        lastLayerInputIDs = list()
+        ### populate lastLayerInputIDs
+        ##### I STG I was trying to do something important +- 10 lines of here... Wow, that's helpful... Did it have to do with activation functions?
+        ### Then find from the remainder which ones have those connections' input nodes as their outputs. Setting them as the next from last layer. Repeat until...? No connections can be made for a layer.
+        while nonFinalLayerConstruction:
+            workingLayerSynapses = list()
+            thisLayerInputIDs = list()
+            for connection in self.layersSynapse[workingIter]:# from the previous layer of connections...# If it's not on the list,add it.
+                if not any(f"{connection[0]}:{connection[1]}" == x for x in thisLayerInputIDs):# copy only the unique IDs
+                    thisLayerInputIDs.append(f"{connection[0]}:{connection[1]}")# ...read out all the input locations.( to a list.)
+                    if any(f"{connection[0]}:{connection[1]}" == x for x in lastLayerInputIDs):# if current input ID is also an input in the previous layer, promote it.
+                        del self.nodeLayerStructure[workingIter][connection[1]]# remove specifically the node ID from the previous layer of self.nodeLayerStructure.
+
+
+                if connection[0]:# is internal input
+                    self.nodeLayerStructure[workingIter + 1].append(connection[1])
+            for connection in backBurner:# for every connection in the back burner# Make the next layer
+                if any(f"{connection[2]}:{connection[3]}" == x for x in lastLayerInputIDs):# if the connections' output matches the input from a connection in the previous layer:
+                    workingLayerSynapses.append(connection)### it is part of the next layer.## Pretty sure that's all I need here...
+                    # so I need to find out which nodes they connect to and put them in the nodeLayer?
+                    pass
+            if not workingLayerSynapses:# Layer was empty
+                nonFinalLayerConstruction = False# Brain finished, stop building. Last layer was the top layer### weights that sample from internal nodes take the bias?
+            else:
+                self.layersSynapse.append(workingLayerSynapses)
+            lastLayerInputIDs = thisLayerInputIDs
+            workingIter += 1
+        self.layersSynapse.reverse()
+        self.nodeLayerStructure.reverse()
+        
+
+        # for layer in self.layers:
+        #     for connection in layer:# cycle through all the connections in self.brain
+        #         if connection
+
+
+
+
+        # so on init:
+        # decode genome
+        # get output count, count how many genes specify a connection to an output neuron.
+        #
+        # so reversed layer construction? bottom up?
+        # then I'd have what exactly?
+        # I wouldnt be able to update the inputs mid pass because they might be used by an output neuron directly.
+
+
+
+
+        # # We model a single neuron, with 3 input connections and 1 output.
+        # # We assign random weights to a 3 x 1 matrix, with values in the range -1 to 1
+        # # and mean 0.
+        # self.synaptic_weights = 2 * random.random((3, 1)) - 1
+
+    def internalNodeLayer(self, layer:'int'):
+        #generate list of float(-1,1) aka result of tanh
+        '''return nextInputVector'''
+        # make sure to use the right activation function
+        nextInputVector = list()
+        for currentNode in range(len(self.outputNodes)):### for node in range nodeLayerInUse
+            nextInputVector.append(self.__binaryStep(perceptron(self.outputNodes[currentNode], self.__sigmoid) - 0.92))## have this threshold start low(even so far as 0) and increase infinitely ever closer to 0.95 as generation count increases.
+        return nextInputVector
+
+    def finalNodeLayer(self):
+        '''return outputVector'''
+        # make sure to use the right activation function
+        outputVector = list()
+        for currentNode in self.outputNodes:### for node in range nodeLayerInUse
+            outputVector.append(self.__binaryStep(perceptron(currentNode, self.__sigmoid) - 0.92))## have this threshold start low(even so far as 0) and increase infinitely ever closer to 0.95 as generation count increases.
+        return outputVector
+
+    def calculateConnection(self, synapse:'tuple(float]', inputVector):
+        '''return float'''
+        # storeData = calculateConnection(currentSynapse, inputVector[synapse[1]])
+
+
+        if synapse[0]:# if input's coming from an internal neuron
+            workingInput = self.internalNodes[synapse[1]]# get working input from which one.
+        else:# if input's coming from an input neuron
+            workingInput = # get working input from which one.
+        return workingInput * synapse[4]# Now that we found the working input, we multiply it by the weight of the current synapse
+                
+
+
+
+                                                                                                                                        # synapse = 
+                                                                                                                                            # bitstring[0] # 0 is inputInput, 1 is internal input.
+                                                                                                                                            # int bitstring[1:8] # Specify which node by its ID in that group.
+                                                                                                                                            # bitstring[8] # 0 is output, 1 is internal.
+                                                                                                                                            # int bitstring[9:16] # Specify which.
+                                                                                                                                            # float bitstring[16:31] # the weight.
+
+        pass
 
 
     # forward pass # The neural network thinks.
     def think(self, inputVector:'list[float]'):
-        '''return shape, list[bool]'''
+        '''return list[bool]'''
+
+
+        ##### oh boy.
+        # so we have a brain by this point. Obviously.
+        # 
+
+
+
+
+
 
         ### Define default output vector.
         outputVector = list()
@@ -190,11 +248,24 @@ class NeuralNetwork():
 
         # Pass inputs through our neural network.
         ### I need to calculate the new state of each neuron in order one layer at a time, [0, ...].
-        # but the neurons aren't in layers, there's just input/internal/action.
-        if not self.layersSynapse[0]:# only possible activation is if it's the first layer. Therefore, empty brain.
+        # If I need to run nodes first, do so.
+        # then go back and forth between running a connection layer and a node layer.
+        
+        if not self.layersSynapse[0]:# only possible activation is if the first layer contains nothing. Therefore, it's the only layer and the brain is empty.
+            # run the outputNodeLayer and return the resulting vector
             for node in self.outputNodes:
-                outputVector.append(self.__binaryStep(0 + node[1]))
+                outputVector.append(self.__binaryStep(0 + node[1]))### wrote a func
         else:# not empty brain.
+            ### if self.hasNodeOverConn:# bool
+                # run the first node layer before starting the connection computations
+            # get top layer
+
+
+
+
+
+
+
             for layer in self.layersSynapse:### should be int from string of binary.### should be ordered.# Cycle through all of the
                 for synapse in layer:# find out what you are mutiplying by this weight: Working Input.
                     if synapse[0]:# if input's coming from an internal neuron
@@ -204,8 +275,6 @@ class NeuralNetwork():
                     result = workingInput * synapse[4]# Now that we found the working input, we multiply it by the weight of the current synapse
                     ### read line above.
 
-                    # then just add that to the bias of the output node, right? well  dont want to overwrite the bias...
-                    # so I have to store it so that all the inputs to a node can be added up
 
 
                     # store it in the cache of the propper node.
