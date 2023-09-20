@@ -28,13 +28,13 @@ def init_random_Genome(length:"int"):
         genome.append(randomOneGene())
     return genome
 
-def smallMutation(gene:"str", quantity=1):
+def genomeSmallMutation(gene:"str", quantity=1):
     for i in range(quantity):
         mi = random.randint(len(gene))
         gene = replace_str_index(gene, mi, HEX_OPTIONS[(HEX_OPTIONS[mi] + random.choice([-1, 1]) + 16) % 16])
     return gene
 
-def biggerMutation(gene:"str", quantity=1):
+def genomeBiggerMutation(gene:"str", quantity=1):
     for i in range(quantity):
         gene = replace_str_index(gene, random.randint(len(gene)), HEX_OPTIONS[random.randint(16*8) % 16])
     return gene
@@ -180,7 +180,7 @@ class NeuralNetwork():
         return self.proccessFinalNodeLayer(self)
 
     def reproduce(self):
-        ### request a child from the Sim using self.genome
+        ### request a child from the Sim using self.genome and biases
         pass
 
 
@@ -196,6 +196,15 @@ if __name__ == "__main__":
 
     #Intialise a single neuron neural network.
     neural_network = NeuralNetwork(1, )### if no bias exists, generate one? where? ##### sleeping on it.
+    # for netowrks with parents, a genome should be supplied
+    # a Genome should  come with a bias for each internalNeuron.
+    # a genome doen't know how many internal Neurons it has until it is built into a brain
+    # can I just initialize biases in NN init?
+    # so when im passing a gene( from parent) to NN,
+    # if it doesnt have a list of biasses attached,
+    # that means it was just generated( and it had to be a random generation) and therefore
+    # can recieve random biases?
+    # or should they start with neutral biasses? If I went with that...
 
     # print("Random starting synaptic weights: ")### somehow...
 
@@ -205,9 +214,12 @@ if __name__ == "__main__":
     training_set_outputs = array([[0, 1, 1, 0]]).T
     # Train the neural network using a training set.
     # Do it 10,000 times and make small adjustments each time.
-    # timeit.timeit()### that's not right...
+    # timeit.timeit()# that's not right...
     for i in range(10000):### time it
         neural_network.trainWeights(neural_network.think(training_set_inputs), training_set_outputs)
+
+        ### train network
+
     
     print(f"New synaptic weights after training: \n{neural_network.synaptic_weights}")
 
