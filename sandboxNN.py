@@ -204,7 +204,7 @@ if __name__ == "__main__":
     # if it doesnt have a list of biasses attached,
     # that means it was just generated( and it had to be a random generation) and therefore
     # can recieve random biases?
-    # or should they start with neutral biasses? If I went with that...
+    # or should they start with neutral biasses? If I went with that, how would they ever change? allow networks to learn over the course of their life? while also inheriting?
 
     # print("Random starting synaptic weights: ")### somehow...
 
@@ -216,6 +216,11 @@ if __name__ == "__main__":
     # Do it 10,000 times and make small adjustments each time.
     # timeit.timeit()# that's not right...
     for i in range(10000):### time it
+        # for every step of the simulation that the network instance is alive...
+        # The Sim will feed an input vector to the nn, as well as reward so it can learn. If it learns to do something that gets it killed, oh well. Must've fallen in with the wrong crowd...
+        # with the current brain setup and the current inputVector, think. Send chosen action(s) back to Sim(, but before you do..).
+        # train biases, Something's wrong. Brain broke...
+
         neural_network.trainWeights(neural_network.think(training_set_inputs), training_set_outputs)
 
         ### train network
@@ -226,7 +231,7 @@ if __name__ == "__main__":
     # Test the neural network with a new situation.
 
     print(f"Correct answer: \n{training_set_outputs}")
-    print(f"Final answer: \n{neural_network.think(training_set_inputs)}")
+    print(f"Final answer: \n{neural_network.think(training_set_inputs)}")###
     print(f"Considering new situation [1, 0, 0] -> ?: {neural_network.think(array([1, 0, 0]))}")
 ######
 
