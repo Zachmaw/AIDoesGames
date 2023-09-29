@@ -121,15 +121,15 @@ class NeuralNetwork():
     # For Internal Nodes, ID is the node's ID as an int key in self.internalNodes:'dict'
     # For Output Nodes, ID is merely the node's index in self.outputNodes:'list'
     def __init__(self, outputCount:'int', genes:'tuple(list[float], list[str])'):
-        self.genome = genes
+        self.genome = genes### for loop, start/stop/step(individualGeneLength)
         self.cost = (int(), float())## print this once, I just wanna see it.
-        self.outputNodes = list()# Shape: list(tuple(list[float(results from weight multiplications)], float(node bias)). key : list[tuple(inputs, bias)]
-        self.internalNeurons = dict()# internal neuron is tuple and contains workingInputs(list[float(-4,4)]), bias(float(-4,4)), and float(-1,1). key : dict{ID:tuple(inputs, bias, state)}.
+        self.outputNodes = list()# Shape: list(tuple(list[float(results from weight multiplications)], float(node bias)). key : list[bias,inputs]
+        self.internalNeurons = dict()# internal neuron is tuple and contains workingInputs(list[float(-4,4)]), bias(int(-4,3)), and output(float(-1,1)). key : dict{ID:tuple(list[bias,inputs], state)}.
         self.layersSynapse = list()# Full decoded Connections, stacked in layers.# Shape: list[list[tuple(int, int, int, int, float)]]
         self.layersNeuron = list()# Connection output IDs(internal and output Neurons) stacked in layers.# Shape: list[list[outID]]
         self.layersNeuron.append(list())# create the first empty layer of Node struct.
         for i in range(outputCount):# add all output nodes to the first layer of the Neuron structure
-            self.outputNodes.append((list(), genes[0][i], float()))# Shape: tuple(tuple(list[float(input storage)], float(bias), float(output storage))
+            self.outputNodes.append((list(), float()))# Shape: tuple(tuple(list[float(input storage)], float(bias), float(output storage))
             self.layersNeuron[0].append(i)# List of ID pointers. That's it. Because all output Neurons are in the last layer, they don't need output type.
         backBurner = list()
         workingLayerSynapses = list()
@@ -142,15 +142,14 @@ class NeuralNetwork():
                 int(bitstring[8]),# 0 is output, 1 is internal.
                 int(bitstring[9:16], 2),# Specify which.
                 int(bitstring[16:32], 2) / 8000,# the weight.
-                int(bitstring[32:])# Bias, ### needs to be a float
+                int(bitstring[32:])# Bias as int representing an index in list of preset biases
             )# We are decoding ALL the genes as weights and storing them in layers based on their I/O targets.
-            self.cost.append(decodedSynapse)# add it to totalConnections for energy tracking later
             # you find out how many connections you have to output nodes, placing those in the final layer of the synapseStructure, setting the rest to the side for now.
-            if decodedSynapse[2]:# if the output is an internal node, just go ahead and add that to the last layer, first.
-                if not any(decodedSynapse[3] == id for id in self.internalNeurons):# Check if that ID is already in the list.
+            if decodedSynapse[2]:# if the output is an internal node,
+                if not any(decodedSynapse[3] == id for id in self.internalNeurons):# Check if that ID is already in the dict.
                     self.internalNeurons[decodedSynapse[3]] = (list(), genes[0][outputCount + len(self.internalNeurons)], float())# generate internal node with correct bias
                 backBurner.append(decodedSynapse)# then throw it on the...
-            else:# Connects to an output node.
+            else:# Connects to an output node. just add that to the last layer, first.
                 if decodedSynapse[3] < outputCount:# is a real output Node. if not real, pruned.
                     workingLayerSynapses.append(decodedSynapse)# it goes in the last layer.
                     thisLayerInputIDs.append((decodedSynapse[0], decodedSynapse[1]))# log input for use in finding the next Connection and Node layers.
@@ -194,7 +193,8 @@ class NeuralNetwork():
         # call a round of gradient decent
         # how do I get presumed loss?
         # network needs to come up with a vector that it thiks it will be shown next
-        # so then it could calculate how wrong it was
+        # so then it could calculate how wrong it thinks it was
+
 
     def __sigmoid(self, x):# Sig and Tanh take (-4,4) but Sigm gives (0,1) and Tanh gives (-1,1)
         # The derivative of the Sigmoid function.
@@ -227,15 +227,14 @@ class NeuralNetwork():
         as a 1-D vector of binary returns from the binaryStep activation function.'''
         outputVector = list()
         for i in range(len(self.outputNodes)):# make sure to use the right activation function
-            self.outputNodes[i] = perceptron(self.outputNodes[i], self.__sigmoid)
-            outputVector.append(self.__binaryStep(self.outputNodes[i][2] - 0.92))## have this threshold start low(even so far as 0) and increase infinitely ever closer to 0.95(or maybe even .98, but I wouldnt go higher...) as generation count increases.
+            outputVector.append(self.__binaryStep(perceptron(self.outputNodes[i], self.__sigmoid) - 0.92))## have this threshold start low(even so far as 0) and increase infinitely ever closer to 0.95(or maybe even .98, but I wouldnt go higher...) as generation count increases.
         return outputVector
 
-    def proccessInternalNodeLayer(self, layer:'list[int]'):# Layer here is a list of internal neuron IDs
+    def proccessInternalNodeLayer(self, workingLayer:'list[int]'):# Layer here is a list of internal neuron IDs
         #generate list of float(-1,1) aka result of tanh
         '''Updates internal Nodes' states in place.\nreturn None'''
-        for i in range(len(layer)):# for every Node in the provided layer of IDs, set the output state of that Node while also resetting it's input cache.
-            self.internalNeurons[layer[i]] = perceptron(self.internalNeurons[layer[i]], self.__tanh)
+        for i in range(len(workingLayer)):# for every Node in the provided layer of IDs, set the output state of that Node while also resetting it's input cache.
+            self.internalNeurons[workingLayer[i]] = perceptron(self.internalNeurons[workingLayer[i]], self.__tanh)
 
     def think(self, inputVector:'list[float]'):# forward pass # The neural network thinks.
         '''return list[single-bit binary]'''# I need to produce an output vector from the whole network. List of Binary.# Prepare input set for our neural network.
