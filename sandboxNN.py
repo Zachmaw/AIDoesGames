@@ -67,11 +67,11 @@ def perceptron(node:'tuple(list[float], float, float)', activationFuncOfChoice):
     for floa in node[0]:
         tempN += floa
     result = activationFuncOfChoice(tempN + node[1])# the result of a node is a float no matter what, internal(-1,1), output(0,1). But then we binary the output nodes. 
-    return (list(), adjustBias(node[1], result), result)# add bias# Activate.
+    return (list(), node[1], result)# add bias# Activate.
 
-def adjustBias(old_bias:"float", strength:"float"):# if i let it choose when to update it's internal composition, it could learn how to learn...
-    muta = 
-    return old_bias - learning_rate * gradient
+# def adjustBias(old_bias:"float", strength:"float"):# if i let it choose when to update it's internal composition, it could learn how to learn...
+#     muta = 
+#     return old_bias - learning_rate * gradient
 
 # m denotes the number of examples here, not the number of features
 def gradientDescent(x, targetPrediction, theta, learningRate, m, numIterations:"int"):
@@ -187,14 +187,13 @@ class NeuralNetwork():
         self.layersSynapse.reverse()
         self.layersNeuron.reverse()
     
-    def updateBiases(self, presumedLoss):
-        pass###
-        # I cant change the genes, but I can modify the neurons in the brain...
-        # call a round of gradient decent
-        # how do I get presumed loss?
-        # network needs to come up with a vector that it thiks it will be shown next
-        # so then it could calculate how wrong it thinks it was
-
+    def updateBiases(self, presumedLoss):## Decided that instead of the network being able to train anything during it's life, it instead must just live with the brain it was given.
+        pass# \###
+        # # I cant change the genes, but I can modify the neurons in the brain...
+        # # call a round of gradient decent
+        # # how do I get presumed loss?
+        # # network needs to come up with a vector that it thiks it will be shown next
+        # # so then it could calculate how wrong it thinks it was
 
     def __sigmoid(self, x):# Sig and Tanh take (-4,4) but Sigm gives (0,1) and Tanh gives (-1,1)
         # The derivative of the Sigmoid function.
@@ -230,7 +229,7 @@ class NeuralNetwork():
             outputVector.append(self.__binaryStep(perceptron(self.outputNodes[i], self.__sigmoid) - 0.92))## have this threshold start low(even so far as 0) and increase infinitely ever closer to 0.95(or maybe even .98, but I wouldnt go higher...) as generation count increases.
         return outputVector
 
-    def proccessInternalNodeLayer(self, workingLayer:'list[int]'):# Layer here is a list of internal neuron IDs
+    def proccessInternalNodeLayer(self, workingLayer:'list[int]'):# Layer here is a list of internal neuron IDs. These IDs represent the specific Neurons in self.internalNeurons which must be proccessed.
         #generate list of float(-1,1) aka result of tanh
         '''Updates internal Nodes' states in place.\nreturn None'''
         for i in range(len(workingLayer)):# for every Node in the provided layer of IDs, set the output state of that Node while also resetting it's input cache.
@@ -295,7 +294,7 @@ if __name__ == "__main__":
     training_set_inputs = array([[0, 0, 1], [1, 1, 1], [1, 0, 1], [0, 1, 1]])
     training_set_outputs = array([[0, 1, 1, 0]]).T
     # Train the neural network using a training set.
-    # Do it 10,000 times and make small adjustments each time.
+    # Do it 10,000 times and make small adjustments each time.### GRADIENT DESCENT!
     # timeit.timeit()# that's not right...
     for i in range(10000):### time it
         # for every step of the simulation that the network instance is alive...

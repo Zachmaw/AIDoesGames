@@ -51,6 +51,10 @@ class MyNeuralNet():
         pass
 ######
 
+class Genome:
+    def __init__(self) -> None:
+        pass
+
 
 class Player:
     def __init__(self) -> None:
@@ -59,21 +63,17 @@ class Player:
 
     def getPressed(self):
 	    return pygame.key.get_pressed()
-	    
 
-
-class Genome:
-    def __init__(self) -> None:
-        pass
 
 class Agent:# Recieves rewards and observations, and returns an action
     def __init__(self, geneSeq:'Genome'=None) -> None:
-        self.memory = {}
+        self.memory = str()
         self.geneome = geneSeq
         if geneSeq:### Build a NN from a Genome to handle the object.
             pass
         else:# That there's a Human, probably.
             pass### Make the object recieve input from input devices( wait on the User)
+            # THIS Agent is a Player
 
 
 
