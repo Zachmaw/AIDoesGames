@@ -107,7 +107,7 @@ class Sim:
 #         self.running = False
 #     def advance(self):
 #         pass
-#     def play(self):
+#     def run(self):
 #         # repetedly call advance
 #         while self.running:
 #             self.advance()
