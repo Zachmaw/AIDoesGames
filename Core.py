@@ -92,10 +92,10 @@ class Sim:
         return envRules(actions)### make sure actions.len() can be varied between timesteps.(as long as len(actions) == len(agents))
     def setEnvironment(self,newEnv,keepEnv:'bool'=False):
         '''Set a new environment for this simulation
-        (Can be incredibly deadly for Agent objects...)'''
-        ### keepEnv
-        if keepEnv:
-            pass### ugh
+        (Almost always incredibly deadly for Agent objects...)'''
+        # ### keepEnv
+        # if keepEnv:
+        #     pass### ugh
         self.environment = newEnv
 
 
