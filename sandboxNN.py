@@ -8,7 +8,7 @@ Biases = list()
 for i in range(16):# could only get -8 to +7, but that's fine because a bias of +8 means that neuron fires(with max power) no matter what.
     Biases.append(int(i - 8))
 # SETTINGS INIT
-learning_rate = 0.03
+# learning_rate = 0.03
 # FUNCTIONS
 def mult(weightValue:'float', input:"float"):
     '''return float'''
@@ -46,13 +46,13 @@ def roll(d, dc, bonus):
     else:
         return False
 
-def generateMutationBitstring(geneLen:"int"):
+def generateMutationBitstring(geneLen:"int", toxicWasteBonus:"float"=0.0):
     temp = list()
     for i in range(geneLen):
-        if roll(1000, 9, 0):
-            temp.append("0")
-        else:
+        if roll(1000, 993, 1000 * toxicWasteBonus):
             temp.append("1")
+        else:
+            temp.append("0")
     return "".join(temp)
 
 def bitCombine(argA:"str", argB:"str"):
@@ -61,22 +61,13 @@ def bitCombine(argA:"str", argB:"str"):
         temp.append(str((int(argA[argi]) + int(argB[argi])) % 2))
     return "".join(temp)
 
-def mutateBinary(bitstring:"str", mega=False):##
+def mutateBitstring(bitstring:"str"):
     return bitCombine(bitstring, generateMutationBitstring(36))
 
-
-#####
-# # The question shouldnt be how many mutations per gene, but odds of mutation.
-# def mutateHexdec(gene:"str"):
-#     '''raises/lowers the hexadecimal value of one by one'''
-#     mutIndex = random.randint(len(gene))
-#     gene = replace_str_index(gene, mutIndex, HEX_OPTIONS[mutIndex + random.choice([1, 15]) % 16])
-#     return gene
-
-def mutateHexdec(gene:"str"):
+def mutateHexdec(gene:"str", radiationBonus:"float"=0.0):
     '''raises/lowers the value of random bonds by one'''
     for i in range(len(gene)):
-        if not roll(1000, 6, 0):
+        if roll(1000, 994, 1000 * radiationBonus):
             gene = replace_str_index(gene, i, HEX_OPTIONS[int(hextobin(gene[i]), 2) + random.choice([1, 15]) % 16])
     return gene
 
@@ -168,10 +159,9 @@ class NeuralNetwork():
         backBurner = list()
         workingLayerSynapses = list()
         thisLayerInputIDs = list()
-        genome = list
+        genome = list# for every gene, make it a bitstring, mutate it, then disect it, turn it back into hexString, and store it in genome.
         for i in range(len(genes)):# run through all the genes in the genome# Decode all the connections into tuples.# for synapse(index) in the_genome:
-            bitstring = hextobin(genes[i])# retrieves the bitstring ### This would be the place to add mutation for growing NNs. apply bitflips to the entire bitstring before splicing it.
-            ### MUTATION #bitstring = mutate(bitstring)
+            bitstring = mutateBitstring(hextobin(genes[i]))# MUTATION | for growing NNs.
             genome.append(binToHex(bitstring))
             decodedSynapse = (# disect it 
                 int(bitstring[0]),# 0 is inputInput, 1 is internal input. 1 bit
@@ -289,11 +279,17 @@ class NeuralNetwork():
                 thinkingLayerNeurons += 1# gather input values and proccess the layer of Nodes with each advancement.
         return self.proccessFinalNodeLayer(self)# run final output node layer
 
-    def seed(self, mutations:"list[str]", perGeneGrowingMutChance:"float"=0.08, mutatoTheDevastatoGrowing:"float"=0.01):
+    def seed(self, irradiation:"float"):
         ### Gets called by the Sim when the Network has been selected to aid in repopulation.
         ### self.Genome.update with current biases
-        # needs to return a( mutated) genetic sequence.
-        pass
+        # needs to return a( mutated) genetic sequence from the genome.
+        newGenome = list()
+        for gene in self.genome:
+            newGenome.append(mutateHexdec(gene, irradiation))
+        return newGenome
+        ### Shouldn't the NN give a pure version of it's genome and the Sim can irradiate it?
+        # or leave the NN the ability to mutate itself...
+        # but I wanna be able to clone NNs...
 
 # MAIN BLOCK
 if __name__ == "__main__":
