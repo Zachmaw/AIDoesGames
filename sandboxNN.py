@@ -1,12 +1,15 @@
-from numpy import random, exp, exp2, tanh, heaviside, array, transpose, dot
-import timeit
-
+#MISSION STATEMENT
+# IMPORTS
+from numpy import random, exp, exp2, tanh, heaviside, array, dot, transpose
+# import timeit
+# CONSTANT INIT
 HEX_OPTIONS = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"]
-NewbornBiases = list()
+Biases = list()
 for i in range(16):# could only get -8 to +7, but that's fine because a bias of +8 means that neuron fires(with max power) no matter what.
-    NewbornBiases.append(float(i - 8))
+    Biases.append(int(i - 8))
+# SETTINGS INIT
 learning_rate = 0.03
-
+# FUNCTIONS
 def mult(weightValue:'float', input:"float"):
     '''return float'''
     return input * weightValue
@@ -20,47 +23,62 @@ def hextobin(hexaString):
 def replace_str_index(text, index=0, replacement=''):
     return f'{text[:index]}{replacement}{text[index+1:]}'
 
-def bitflip(bitstring):
-    pass
-
 def randomOneGene():
     gene = list()
     for i in range(9):
         gene.append(random.choice(HEX_OPTIONS))
     return "".join(gene)
 
-def init_random_Genome(length:"int"):
+def init_random_Genome(geneCount:"int"):
     genome = list()
-    for i in range(length):
+    for i in range(geneCount):
         genome.append(randomOneGene())
-    return genome
+    return genome# a list of hexdec strings( each with len(9))
 
 def roll(d, dc, bonus):
     r = random.randint(1, d+1)
-    outcome = r + bonus
-    if r == d:
+    if r == d:# if critical roll
         return True
-    if r == 1:
+    if r == 1:# if natural 1
         return False
-    if outcome >= dc:
+    if dc <= r + bonus:
         return True
     else:
         return False
 
-def genomeSmallMutation(gene:"str", quantity=1):
-    '''raises/lowers the hexadecimal value of one '''
-    for i in range(quantity):
-        mi = random.randint(len(gene))
-        gene = replace_str_index(gene, mi, HEX_OPTIONS[(HEX_OPTIONS[mi] + random.choice([-1, 1]) + 16) % 16])
-    return gene
+def generateMutationBitstring(geneLen:"int"):
+    temp = list()
+    for i in range(geneLen):
+        if roll(1000, 9, 0):
+            temp.append("0")
+        else:
+            temp.append("1")
+    return "".join(temp)
 
-def genomeBiggerMutation(gene:"str", quantity=1):
-    for i in range(quantity):
-        gene = replace_str_index(gene, random.randint(len(gene)), HEX_OPTIONS[random.randint(16*8) % 16])
-    return gene
+def bitCombine(argA:"str", argB:"str"):
+    temp = list()
+    for argi in range(len(argA)):
+        temp.append(str((int(argA[argi]) + int(argB[argi])) % 2))
+    return "".join(temp)
 
-def mutate(genome:"list[str]"):
-    pass
+def mutateBinary(bitstring:"str", mega=False):##
+    return bitCombine(bitstring, generateMutationBitstring(36))
+
+
+#####
+# # The question shouldnt be how many mutations per gene, but odds of mutation.
+# def mutateHexdec(gene:"str"):
+#     '''raises/lowers the hexadecimal value of one by one'''
+#     mutIndex = random.randint(len(gene))
+#     gene = replace_str_index(gene, mutIndex, HEX_OPTIONS[mutIndex + random.choice([1, 15]) % 16])
+#     return gene
+
+def mutateHexdec(gene:"str"):
+    '''raises/lowers the value of random bonds by one'''
+    for i in range(len(gene)):
+        if not roll(1000, 6, 0):
+            gene = replace_str_index(gene, i, HEX_OPTIONS[int(hextobin(gene[i]), 2) + random.choice([1, 15]) % 16])
+    return gene
 
 def perceptron(node:'tuple(list[float], float, float)', activationFuncOfChoice):# AKA, it shouldn't have an ID by this point. No lookups.
     tempN = float()# add up the inputs which are already stored
@@ -73,33 +91,33 @@ def perceptron(node:'tuple(list[float], float, float)', activationFuncOfChoice):
 #     muta = 
 #     return old_bias - learning_rate * gradient
 
-# m denotes the number of examples here, not the number of features
-def gradientDescent(x, targetPrediction, theta, learningRate, m, numIterations:"int"):
-    xT = x.transpose()
-    for i in range(numIterations):
-        prediction = dot(x, theta)
-        errorValue = prediction - targetPrediction
-        # avg cost per example (the 2 in 2*m doesn't really matter here.
-        # But to be consistent with the gradient, I include it)
-        dirivitiveOfTheError = sum(errorValue ** 2) / (2 * m)
-        print("Iteration %d | Cost: %f" % (i, dirivitiveOfTheError))
-        # avg gradient per example
-        gradient = dot(xT, errorValue) / m
-        # update
-        theta = theta - learningRate * gradient
-    return theta
+# # m denotes the number of examples here, not the number of features
+# def gradientDescent(x, targetPrediction, theta, learningRate, m, numIterations:"int"):
+#     xT = x.transpose()
+#     for i in range(numIterations):
+#         prediction = dot(x, theta)
+#         errorValue = prediction - targetPrediction
+#         # avg cost per example (the 2 in 2*m doesn't really matter here.
+#         # But to be consistent with the gradient, I include it)
+#         dirivitiveOfTheError = sum(errorValue ** 2) / (2 * m)
+#         print("Iteration %d | Cost: %f" % (i, dirivitiveOfTheError))
+#         # avg gradient per example
+#         gradient = dot(xT, errorValue) / m
+#         # update
+#         theta = theta - learningRate * gradient
+#     return theta
 
 
 
 # What if:!
 # I just make the gene one hex digit longer?
 # tack the "potential bias" onto the end?
-# It needs to be randomly generated with the rest of it.
+# It needs to be randomly generated with the rest of the gene.
 # It can be mutated the same as the rest of it...
 # It's range would be... 15...
 #
 # What if I implement simple biasses?
-# Every gene has bias data. 4 bits for it.
+# Every gene has bias data. 4 bits for it.()
 # But the bias is only used if that gene is what inits the internal node.
 # Let's not have biases on output nodes, aye?
 
@@ -113,46 +131,66 @@ def gradientDescent(x, targetPrediction, theta, learningRate, m, numIterations:"
 
 
 
+
+
+# What if the first output node( in sequence) firing means the network wants to update it's memory
+# The second and third indicate location(, but by what formatting?).
+# And the fourth output indicating what to set to.
+# As for location formatting... From two independent floats to a point on a 2D grid.
+
+
+
+
+
+
 ### MUTATIONS NEED TO HAPPEN DURING BINARY, not hexa.
 
+### mutation types
+# "accidents happen"/growing-up mutations
+# Reproductive mutations
 
+
+# CLASSES
 
 class NeuralNetwork():
     # For Internal Nodes, ID is the node's ID as an int key in self.internalNodes:'dict'
     # For Output Nodes, ID is merely the node's index in self.outputNodes:'list'
-    def __init__(self, outputCount:'int', genes:'tuple(list[float], list[str])'):
-        self.genome = genes### for loop, start/stop/step(individualGeneLength)
-        self.cost = (int(), float())## print this once, I just wanna see it.
+    def __init__(self, outputCount:'int', genes:'list[str]', perGeneGrowingMutChance:"float"=0.08, mutatoTheDevastatoGrowing:"float"=0.01):### for loop, start/stop/step(individualGeneLength)# le HUH?!
+        self.cost = (int(), float())### print this once, I just wanna see it.
         self.outputNodes = list()# Shape: list(tuple(list[float(results from weight multiplications)], float(node bias)). key : list[bias,inputs]
         self.internalNeurons = dict()# internal neuron is tuple and contains workingInputs(list[float(-4,4)]), bias(int(-4,3)), and output(float(-1,1)). key : dict{ID:tuple(list[bias,inputs], state)}.
         self.layersSynapse = list()# Full decoded Connections, stacked in layers.# Shape: list[list[tuple(int, int, int, int, float)]]
-        self.layersNeuron = list()# Connection output IDs(internal and output Neurons) stacked in layers.# Shape: list[list[outID]]
+        self.layersNeuron = list()# Connection output IDs(internal and output Neurons), stacked in layers.(Bro, trust me.)# Shape: list[list[outID]]
         self.layersNeuron.append(list())# create the first empty layer of Node struct.
         for i in range(outputCount):# add all output nodes to the first layer of the Neuron structure
-            self.outputNodes.append((list(), float()))# Shape: tuple(tuple(list[float(input storage)], float(bias), float(output storage))
+            self.outputNodes.append((list(), int()))# Shape: tuple(tuple(list[float(input storage)], float(bias), float(output storage))
             self.layersNeuron[0].append(i)# List of ID pointers. That's it. Because all output Neurons are in the last layer, they don't need output type.
         backBurner = list()
         workingLayerSynapses = list()
         thisLayerInputIDs = list()
-        for i in range(len(genes[1])):# run through all the genes in the genome# Decode all the connections into tuples.# for synapse(index) in the_genome:
-            bitstring = hextobin(genes[1][i])# retrieves the bitstring
+        genome = list
+        for i in range(len(genes)):# run through all the genes in the genome# Decode all the connections into tuples.# for synapse(index) in the_genome:
+            bitstring = hextobin(genes[i])# retrieves the bitstring ### This would be the place to add mutation for growing NNs. apply bitflips to the entire bitstring before splicing it.
+            ### MUTATION #bitstring = mutate(bitstring)
+            genome.append(binToHex(bitstring))
             decodedSynapse = (# disect it 
-                int(bitstring[0]),# 0 is inputInput, 1 is internal input.
-                int(bitstring[1:8], 2),# Specify which node by its ID in that group.
-                int(bitstring[8]),# 0 is output, 1 is internal.
-                int(bitstring[9:16], 2),# Specify which.
-                int(bitstring[16:32], 2) / 8000,# the weight.
-                int(bitstring[32:])# Bias as int representing an index in list of preset biases
+                int(bitstring[0]),# 0 is inputInput, 1 is internal input. 1 bit
+                int(bitstring[1:8], 2),# Specify which node by its ID in that group. 7 bits
+                int(bitstring[8]),# 0 is output, 1 is internal. 1 bit
+                int(bitstring[9:16], 2),# Specify which. 7 bits
+                int(bitstring[16:32], 2) / 8000,# the weight. 16 bits
+                int(bitstring[32:], 2)# Bias as int representing an index in the list of preset biases. # 4 bits, 0 to 15, -8 to +7.
             )# We are decoding ALL the genes as weights and storing them in layers based on their I/O targets.
-            # you find out how many connections you have to output nodes, placing those in the final layer of the synapseStructure, setting the rest to the side for now.
+            # you find out how many connections you have to output nodes, placing those in the final/first layer( you know what I mean) of the synapseStructure, setting the rest to the side for now.
             if decodedSynapse[2]:# if the output is an internal node,
-                if not any(decodedSynapse[3] == id for id in self.internalNeurons):# Check if that ID is already in the dict.
-                    self.internalNeurons[decodedSynapse[3]] = (list(), genes[0][outputCount + len(self.internalNeurons)], float())# generate internal node with correct bias
-                backBurner.append(decodedSynapse)# then throw it on the...
+                if not any(decodedSynapse[3] == id for id in self.internalNeurons):# Check if that ID is not already in the dict.
+                    self.internalNeurons[decodedSynapse[3]] = (list(), Biases[decodedSynapse[5]], float())# generate internal node with correct bias
+                backBurner.append(decodedSynapse)# then throw it on the...!
             else:# Connects to an output node. just add that to the last layer, first.
                 if decodedSynapse[3] < outputCount:# is a real output Node. if not real, pruned.
                     workingLayerSynapses.append(decodedSynapse)# it goes in the last layer.
                     thisLayerInputIDs.append((decodedSynapse[0], decodedSynapse[1]))# log input for use in finding the next Connection and Node layers.
+        self.genome = genome
         # First( base) layer of Synapses.
         self.layersSynapse.append(workingLayerSynapses)# take the layer[every Connection that goes to an output Node] and Add it to allSynapseLayers first.
         needToBuildNextLayer = True
@@ -186,14 +224,6 @@ class NeuralNetwork():
                 needToBuildNextLayer = False# Brain finished, stop building. Last layer was the top layer
         self.layersSynapse.reverse()
         self.layersNeuron.reverse()
-    
-    def updateBiases(self, presumedLoss):## Decided that instead of the network being able to train anything during it's life, it instead must just live with the brain it was given.
-        pass# \###
-        # # I cant change the genes, but I can modify the neurons in the brain...
-        # # call a round of gradient decent
-        # # how do I get presumed loss?
-        # # network needs to come up with a vector that it thiks it will be shown next
-        # # so then it could calculate how wrong it thinks it was
 
     def __sigmoid(self, x):# Sig and Tanh take (-4,4) but Sigm gives (0,1) and Tanh gives (-1,1)
         # The derivative of the Sigmoid function.
@@ -221,6 +251,12 @@ class NeuralNetwork():
                 result.append(i)
         return result
 
+    def proccessInternalNodeLayer(self, workingLayer:'list[int]'):# Layer here is a list of IDs referencing specific Neurons in self.internalNeurons which must be proccessed.
+        #generate list of float(-1,1) aka result of tanh
+        '''Updates internal Nodes' states in place.\nreturns None.'''
+        for i in range(len(workingLayer)):# for every Node in the provided layer of IDs, set the output state of that Node while also resetting it's input cache.
+            self.internalNeurons[workingLayer[i]] = perceptron(self.internalNeurons[workingLayer[i]], self.__tanh)
+
     def proccessFinalNodeLayer(self):
         '''return outputVector\n
         as a 1-D vector of binary returns from the binaryStep activation function.'''
@@ -229,21 +265,16 @@ class NeuralNetwork():
             outputVector.append(self.__binaryStep(perceptron(self.outputNodes[i], self.__sigmoid) - 0.92))## have this threshold start low(even so far as 0) and increase infinitely ever closer to 0.95(or maybe even .98, but I wouldnt go higher...) as generation count increases.
         return outputVector
 
-    def proccessInternalNodeLayer(self, workingLayer:'list[int]'):# Layer here is a list of internal neuron IDs. These IDs represent the specific Neurons in self.internalNeurons which must be proccessed.
-        #generate list of float(-1,1) aka result of tanh
-        '''Updates internal Nodes' states in place.\nreturn None'''
-        for i in range(len(workingLayer)):# for every Node in the provided layer of IDs, set the output state of that Node while also resetting it's input cache.
-            self.internalNeurons[workingLayer[i]] = perceptron(self.internalNeurons[workingLayer[i]], self.__tanh)
-
     def think(self, inputVector:'list[float]'):# forward pass # The neural network thinks.
         '''return list[single-bit binary]'''# I need to produce an output vector from the whole network. List of Binary.# Prepare input set for our neural network.
-        # Inputs range from -1 to 1
+        # Inputs range from 0-1!)
         thinkingLayerNeurons = int()# If I need to run nodes first, do so.
-        if len(self.layersNeuron) - 1 == len(self.layersSynapse):# if equal, connections goes first like normal. If nodeLayerCount >1 connectionLayerCount, run the node layer first. otherwise, something broke...
+        if len(self.layersNeuron) == len(self.layersSynapse) + 1:# If there's one less synapse layer, Node layer gets priority. Else they're the same value to start with and a synapse layer runs first. Otherwise, something broke...
             self.proccessInternalNodeLayer(self.layersNeuron[thinkingLayerNeurons])# run the first node layer before starting the connection computations
-            thinkingLayerNeurons += 1
-        for countLayerSynapse in self.layersSynapse:# go back and forth between running a connection layer and a node layer.
-            for synapse in self.layersSynapse[countLayerSynapse]:# find out what you are mutiplying by this weight: Working Input.
+            thinkingLayerNeurons += 1 ### find a way to remove this line and the other one ^.
+        for connLayerIndex in range(len(self.layersSynapse)):# go back and forth between running a connection layer and a node layer. For each Cycle layer...
+            for synapse in self.layersSynapse[connLayerIndex]:# find out what you are mutiplying by this weight: Working Input.# Run through all synapses, but run a node layer between them.
+                ## what if chance finds a way to try to store into a nonexistant node?
                 if synapse[0]:# if input's coming from an internal neuron
                     result = mult(synapse[4], self.internalNeurons[synapse[1]])# get working input from which one.
                 else:# if input's coming from a raw input
@@ -253,18 +284,18 @@ class NeuralNetwork():
                 else:# is output neuron
                     self.outputNodes[synapse[3]][0].append(result)# synapse[oddNum] returns an ID.
             # until the last node layer which needs to be skipped
-            if not countLayerSynapse == len(self.layersSynapse) - 1:# When calculating the last synapse layer, I know the next Node layer is the output one. I don't need to include output layer in the node structure.
+            if not connLayerIndex == len(self.layersSynapse) - 1:# When calculating the last synapse layer, I know the next Node layer is the output one.( I don't need to include output layer in the node structure.(But I do it anyway(someone help me)))
                 self.proccessInternalNodeLayer(self.layersNeuron[thinkingLayerNeurons])# After every synapse in the layer has been calculated, The next layer of neurons needs to fire.
                 thinkingLayerNeurons += 1# gather input values and proccess the layer of Nodes with each advancement.
-        # run final output node layer
-        return self.proccessFinalNodeLayer(self)
+        return self.proccessFinalNodeLayer(self)# run final output node layer
 
-    def reproduce(self):
-        ### request a child be created in the Sim using self.genome and biases
-        # self.Genome.update with current biases
+    def seed(self, mutations:"list[str]", perGeneGrowingMutChance:"float"=0.08, mutatoTheDevastatoGrowing:"float"=0.01):
+        ### Gets called by the Sim when the Network has been selected to aid in repopulation.
+        ### self.Genome.update with current biases
+        # needs to return a( mutated) genetic sequence.
         pass
 
-
+# MAIN BLOCK
 if __name__ == "__main__":
 
 
