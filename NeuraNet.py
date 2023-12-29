@@ -1,6 +1,7 @@
 #MISSION STATEMENT
 # IMPORTS
-from numpy import random, exp, exp2, tanh, heaviside, array, dot, transpose
+from numpy import random, exp, exp2, tanh, heaviside, array#, dot, transpose
+from math import ceil
 # import timeit
 # CONSTANT INIT
 HEX_OPTIONS = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"]
@@ -8,7 +9,6 @@ Biases = list()
 for i in range(16):# could only get -8 to +7, but that's fine because a bias of +8 means that neuron fires(with max power) no matter what.
     Biases.append(int(i - 8))
 # SETTINGS INIT
-# learning_rate = 0.03
 # FUNCTIONS
 def mult(weightValue:'float', input:"float"):
     '''return float'''
@@ -23,6 +23,17 @@ def hextobin(hexaString):
 def replace_str_index(text, index=0, replacement=''):
     return f'{text[:index]}{replacement}{text[index+1:]}'
 
+def roll(d, dc, bonus):
+    r = random.randint(1, d+1)
+    if r == d:# if critical roll
+        return True
+    if r == 1:# if natural 1
+        return False
+    if dc <= r + bonus:
+        return True
+    else:
+        return False
+
 def randomOneGene():
     gene = list()
     for i in range(9):
@@ -35,18 +46,8 @@ def init_random_Genome(geneCount:"int"):
         genome.append(randomOneGene())
     return genome# a list of hexdec strings( each with len(9))
 
-def roll(d, dc, bonus):
-    r = random.randint(1, d+1)
-    if r == d:# if critical roll
-        return True
-    if r == 1:# if natural 1
-        return False
-    if dc <= r + bonus:
-        return True
-    else:
-        return False
-
 def generateMutationBitstring(geneLen:"int", toxicWasteBonus:"float"=0.0):
+    '''Default odds: 8/1000\nA float of 1.0 should cause mutation chance to be 999/1000\n Nat 1 is still a possibility.'''
     temp = list()
     for i in range(geneLen):
         if roll(1000, 993, 1000 * toxicWasteBonus):
@@ -64,7 +65,7 @@ def bitCombine(argA:"str", argB:"str"):
 def mutateBitstring(bitstring:"str"):
     return bitCombine(bitstring, generateMutationBitstring(36))
 
-def mutateHexdec(gene:"str", radiationBonus:"float"=0.0):
+def mutateHexdec(gene:"str", radiationBonus:"float"):
     '''raises/lowers the value of random bonds by one'''
     for i in range(len(gene)):
         if roll(1000, 994, 1000 * radiationBonus):
@@ -78,76 +79,14 @@ def perceptron(node:'tuple(list[float], float, float)', activationFuncOfChoice):
     result = activationFuncOfChoice(tempN + node[1])# the result of a node is a float no matter what, internal(-1,1), output(0,1). But then we binary the output nodes. 
     return (list(), node[1], result)# add bias# Activate.
 
-# def adjustBias(old_bias:"float", strength:"float"):# if i let it choose when to update it's internal composition, it could learn how to learn...
-#     muta = 
-#     return old_bias - learning_rate * gradient
-
-# # m denotes the number of examples here, not the number of features
-# def gradientDescent(x, targetPrediction, theta, learningRate, m, numIterations:"int"):
-#     xT = x.transpose()
-#     for i in range(numIterations):
-#         prediction = dot(x, theta)
-#         errorValue = prediction - targetPrediction
-#         # avg cost per example (the 2 in 2*m doesn't really matter here.
-#         # But to be consistent with the gradient, I include it)
-#         dirivitiveOfTheError = sum(errorValue ** 2) / (2 * m)
-#         print("Iteration %d | Cost: %f" % (i, dirivitiveOfTheError))
-#         # avg gradient per example
-#         gradient = dot(xT, errorValue) / m
-#         # update
-#         theta = theta - learningRate * gradient
-#     return theta
-
-
-
-# What if:!
-# I just make the gene one hex digit longer?
-# tack the "potential bias" onto the end?
-# It needs to be randomly generated with the rest of the gene.
-# It can be mutated the same as the rest of it...
-# It's range would be... 15...
-#
-# What if I implement simple biasses?
-# Every gene has bias data. 4 bits for it.()
-# But the bias is only used if that gene is what inits the internal node.
-# Let's not have biases on output nodes, aye?
-
-
-# what if the first output node firing means the network wants to update it's biases
-# how would I know how much to change them by? or which ones? or in which directions?
-# perhaps leave that for the network to figure out?
-# call self.updateBiases
-
-
-
-
-
-
-
-# What if the first output node( in sequence) firing means the network wants to update it's memory
-# The second and third indicate location(, but by what formatting?).
-# And the fourth output indicating what to set to.
-# As for location formatting... From two independent floats to a point on a 2D grid.
-
-
-
-
-
-
-### MUTATIONS NEED TO HAPPEN DURING BINARY, not hexa.
-
-### mutation types
-# "accidents happen"/growing-up mutations
-# Reproductive mutations
-
-
 # CLASSES
-
 class NeuralNetwork():
     # For Internal Nodes, ID is the node's ID as an int key in self.internalNodes:'dict'
     # For Output Nodes, ID is merely the node's index in self.outputNodes:'list'
-    def __init__(self, outputCount:'int', genes:'list[str]', perGeneGrowingMutChance:"float"=0.08, mutatoTheDevastatoGrowing:"float"=0.01):### for loop, start/stop/step(individualGeneLength)# le HUH?!
-        self.cost = (int(), float())### print this once, I just wanna see it.
+    def __init__(self, outputCount:'int', generation:"int", genes:'list[str]'=None, irradiation:"float"=0.01):
+        ### self.costToExist = (int(), float())# cost to exist per turn
+        if genes == None:# make some genes based on generation
+            genes = init_random_Genome(ceil(generation/10))## might lower this number, likely no further than 7.
         self.outputNodes = list()# Shape: list(tuple(list[float(results from weight multiplications)], float(node bias)). key : list[bias,inputs]
         self.internalNeurons = dict()# internal neuron is tuple and contains workingInputs(list[float(-4,4)]), bias(int(-4,3)), and output(float(-1,1)). key : dict{ID:tuple(list[bias,inputs], state)}.
         self.layersSynapse = list()# Full decoded Connections, stacked in layers.# Shape: list[list[tuple(int, int, int, int, float)]]
@@ -158,10 +97,10 @@ class NeuralNetwork():
             self.layersNeuron[0].append(i)# List of ID pointers. That's it. Because all output Neurons are in the last layer, they don't need output type.
         backBurner = list()
         workingLayerSynapses = list()
-        thisLayerInputIDs = list()
+        currentLayerInputIDs = list()
         genome = list# for every gene, make it a bitstring, mutate it, then disect it, turn it back into hexString, and store it in genome.
         for i in range(len(genes)):# run through all the genes in the genome# Decode all the connections into tuples.# for synapse(index) in the_genome:
-            bitstring = mutateBitstring(hextobin(genes[i]))# MUTATION | for growing NNs.
+            bitstring = mutateBitstring(hextobin(mutateHexdec(genes[i], irradiation)))# MUTATION * 2 COMBO | By way of irradiation and for growing NNs.
             genome.append(binToHex(bitstring))
             decodedSynapse = (# disect it 
                 int(bitstring[0]),# 0 is inputInput, 1 is internal input. 1 bit
@@ -172,16 +111,19 @@ class NeuralNetwork():
                 int(bitstring[32:], 2)# Bias as int representing an index in the list of preset biases. # 4 bits, 0 to 15, -8 to +7.
             )# We are decoding ALL the genes as weights and storing them in layers based on their I/O targets.
             # you find out how many connections you have to output nodes, placing those in the final/first layer( you know what I mean) of the synapseStructure, setting the rest to the side for now.
-            if decodedSynapse[2]:# if the output is an internal node,
-                if not any(decodedSynapse[3] == id for id in self.internalNeurons):# Check if that ID is not already in the dict.
+            if decodedSynapse[2]:# if the output( from this gene) is an internal node, (make it.)
+                if not any(decodedSynapse[3] == id for id in self.internalNeurons.keys()):# Check if that ID is not already in the dict.
                     self.internalNeurons[decodedSynapse[3]] = (list(), Biases[decodedSynapse[5]], float())# generate internal node with correct bias
                 backBurner.append(decodedSynapse)# then throw it on the...!
             else:# Connects to an output node. just add that to the last layer, first.
-                if decodedSynapse[3] < outputCount:# is a real output Node. if not real, pruned.
+                if decodedSynapse[3] <= outputCount:# is a real output Node. if selected ID is invalid, prune.
                     workingLayerSynapses.append(decodedSynapse)# it goes in the last layer.
-                    thisLayerInputIDs.append((decodedSynapse[0], decodedSynapse[1]))# log input for use in finding the next Connection and Node layers.
+                    currentLayerInputIDs.append((decodedSynapse[0], decodedSynapse[1]))# log input for use in finding the next Connection and Node layers.
+                    if decodedSynapse[0]:# if it's internal, create it so it *can* be found.
+                        if not any(decodedSynapse[1] == id for id in self.internalNeurons.keys()):# Check if that ID is not already in the dict.
+                            self.internalNeurons[decodedSynapse[1]] = (list(), Biases[decodedSynapse[5]], float())# generate internal node with correct bias
         self.genome = genome
-        # First( base) layer of Synapses.
+        # First( base) layer of Synapses( which all output to output Nodes).
         self.layersSynapse.append(workingLayerSynapses)# take the layer[every Connection that goes to an output Node] and Add it to allSynapseLayers first.
         needToBuildNextLayer = True
         if not len(backBurner) >= 1:# ran out of Connections to make layers with.
@@ -189,14 +131,15 @@ class NeuralNetwork():
         elif not len(workingLayerSynapses):# no synapses coupled with the previous Node layer.
             needToBuildNextLayer = False
         while needToBuildNextLayer:# try to build a new set of layers[1:]
-            lastLayerInputIDs = thisLayerInputIDs
-            thisLayerInputIDs = list()
+            lastLayerInputIDs = currentLayerInputIDs
+            currentLayerInputIDs = list()
             self.layersNeuron.append(list())
             # Build Node layer## I feel like somethins fucky with lastLayerInputIDs because thisLayerInputIDs is always being poulated by inputIDs from determined connections.
+            #                                              yeah, so that I can find the nodes that need to fire next in sequence.
             for determinedConnection in self.layersSynapse[len(self.layersNeuron) - 1]:# from the previous layer of connections...# If it's not on the list,add it.
-                if not any((determinedConnection[0], determinedConnection[1]) == x for x in thisLayerInputIDs):# copy only the unique IDs. No duplicate computations of Nodes.
-                    thisLayerInputIDs.append((determinedConnection[0], determinedConnection[1]))# add it to the list of input locations. Ie, next Node layer.
-                    if any((determinedConnection[0], determinedConnection[1]) == x for x in lastLayerInputIDs):# if current input ID matches an input ID in the previous layer, promote it.
+                if not any((determinedConnection[0], determinedConnection[1]) == x for x in currentLayerInputIDs):# copy only the unique IDs. No duplicate computations of Nodes.
+                    currentLayerInputIDs.append((determinedConnection[0], determinedConnection[1]))# add it to the list of input locations. Ie, next Node layer.
+                    if any((determinedConnection[0], determinedConnection[1]) == x for x in lastLayerInputIDs):# if current input ID matches an input ID in the previous layer, promote the node.
                         self.layersNeuron[len(self.layersNeuron) - 1].remove((determinedConnection[0], determinedConnection[1]))# remove the node ID from the previous layer of self.nodeLayerStructure
                 if determinedConnection[0]:#if connection has input from an internal neuron(, as opposed to input from input vector).
                     self.layersNeuron[len(self.layersNeuron)].append(determinedConnection[1])# currentLayer.append(internalNodeID)
@@ -204,7 +147,7 @@ class NeuralNetwork():
             workingLayerSynapses = list()
             for connection in backBurner:# for every connection in the back burner# Make the next layer
                 # the drop off location can't be an output node. because on the first run everything with an output Node as their output will already be put away.
-                if any((connection[2], connection[3]) == id for id in thisLayerInputIDs):# if the connections' output matches an input ID from a connection in the previous layer:
+                if any((connection[2], connection[3]) == id for id in currentLayerInputIDs):# if the connections' output matches an input ID from a connection in the previous layer:
                     workingLayerSynapses.append(connection)# it is part of the next layer.
             if workingLayerSynapses:# if there was something there, add it to the stack.
                 self.layersSynapse.append(workingLayerSynapses)
@@ -232,7 +175,7 @@ class NeuralNetwork():
         ''' It returns '0' is the input is less then zero otherwise it returns one '''
         return heaviside(x,1)
     def __RELU(self, x):
-        ''' It returns zero if the input is less than zero otherwise it returns the given input. '''
+        ''' It returns zero if the input is negative, otherwise it returns the given input.'''
         result = []
         for i in x:
             if i < 0:
@@ -261,14 +204,17 @@ class NeuralNetwork():
         thinkingLayerNeurons = int()# If I need to run nodes first, do so.
         if len(self.layersNeuron) == len(self.layersSynapse) + 1:# If there's one less synapse layer, Node layer gets priority. Else they're the same value to start with and a synapse layer runs first. Otherwise, something broke...
             self.proccessInternalNodeLayer(self.layersNeuron[thinkingLayerNeurons])# run the first node layer before starting the connection computations
-            thinkingLayerNeurons += 1 ### find a way to remove this line and the other one ^.
+            thinkingLayerNeurons += 1 ## find a way to remove this line and the other one ^.(if possible)
         for connLayerIndex in range(len(self.layersSynapse)):# go back and forth between running a connection layer and a node layer. For each Cycle layer...
-            for synapse in self.layersSynapse[connLayerIndex]:# find out what you are mutiplying by this weight: Working Input.# Run through all synapses, but run a node layer between them.
+            for synapse in self.layersSynapse[connLayerIndex]:# find out what you are mutiplying by this weight: Working Input.
                 ## what if chance finds a way to try to store into a nonexistant node?
                 if synapse[0]:# if input's coming from an internal neuron
                     result = mult(synapse[4], self.internalNeurons[synapse[1]])# get working input from which one.
                 else:# if input's coming from a raw input
-                    result = mult(synapse[4], inputVector[synapse[1]])# get working input from which one.
+                    try:
+                        result = mult(synapse[4], inputVector[synapse[1]])# get working input from which one.
+                    except:# "List Index Out of Range":
+                        result = mult(synapse[4], 0)
                 if synapse[2]:# if output is internal# store result in the cache of the propper node.
                     self.internalNeurons[synapse[3]][0].append(result)# referencing: (not always )empty list
                 else:# is output neuron
@@ -279,71 +225,43 @@ class NeuralNetwork():
                 thinkingLayerNeurons += 1# gather input values and proccess the layer of Nodes with each advancement.
         return self.proccessFinalNodeLayer(self)# run final output node layer
 
-    def seed(self, irradiation:"float"):
-        ### Gets called by the Sim when the Network has been selected to aid in repopulation.
-        ### self.Genome.update with current biases
-        # needs to return a( mutated) genetic sequence from the genome.
-        newGenome = list()
-        for gene in self.genome:
-            newGenome.append(mutateHexdec(gene, irradiation))
-        return newGenome
-        ### Shouldn't the NN give a pure version of it's genome and the Sim can irradiate it?
-        # or leave the NN the ability to mutate itself...
-        # but I wanna be able to clone NNs...
+    def seed(self):
+        return self.genome
 
 # MAIN BLOCK
 if __name__ == "__main__":
-
-
-    # # # We model a single neuron, with 3 input connections and 1 output.
-    # # # We assign random weights to a 3 x 1 matrix, with values in the range -1 to 1
-    # # # and mean 0.
-    # # self.synaptic_weights = 2 * random.random((3, 1)) - 1
-
-
-
+    # We model a simple nn, with 3 inputs, 1 output and one random gene per 10 attempts.
     #Intialise a single neuron neural network.
-    neural_network = NeuralNetwork(1, )### if no bias exists, generate one? where? ##### sleeping on it.
-    # for netowrks with parents, a genome should be supplied
-    # a Genome should  come with a bias for each internalNeuron.
-    # a genome doen't know how many internal Neurons it has until it is built into a brain
-    # can I just initialize biases in NN init?
-    # so when im passing a gene( from parent) to NN,
-    # if it doesnt have a list of biasses attached,
-    # that means it was just generated( and it had to be a random generation) and therefore
-    # can recieve random biases?
-    # or should they start with neutral biasses? If I went with that, how would they ever change? allow networks to learn over the course of their life? while also inheriting?
+    neuralnet = NeuralNetwork(1, 1)
+    frame = neuralnet.think([random.random(), 0.5, 1])
+    print(frame)
+    generation = 1
+    genePool = list()
+    maxGenePool = 31
 
-    # print("Random starting synaptic weights: ")### somehow...
+
+
 
     # The training set. We have 4 examples, each consisting of 3 input values
     # and 1 output value.
-    training_set_inputs = array([[0, 0, 1], [1, 1, 1], [1, 0, 1], [0, 1, 1]])
-    training_set_outputs = array([[0, 1, 1, 0]]).T
-    # Train the neural network using a training set.
-    # Do it 10,000 times and make small adjustments each time.### GRADIENT DESCENT!
-    # timeit.timeit()# that's not right...
-    for i in range(10000):### time it
+    training_set_inputs = array([[1, 1, 1], [1, 0, 1], [0, 1, 1]])
+    training_set_outputs = array([[0, 1, 1, 0]])## removed .T, why would I want to transpose this??
+
+
+    # timeit.timeit()# that's not right... maybe just utilise datetime
+    # for i in range(10000):### time it
         # for every step of the simulation that the network instance is alive...
         # The Sim will feed an input vector to the nn, as well as reward so it can learn. If it learns to do something that gets it killed, oh well. Must've fallen in with the wrong crowd...
-        # with the current brain setup and the current inputVector, think. Send chosen action(s) back to Sim(, but before you do..).
-        # train biases,
+        # with the self brain setup and the current inputVector, think. return chosen action(s) back to Sim.
 
-        # weights are trained via evolution yet biases can be learned/inherited???
-        # biases start empty and are updated every step by 
-        # pretty sure inspiration didnt use biases...
-
-        neural_network.trainWeights(neural_network.think(training_set_inputs), training_set_outputs)
+        # neural_network.think(training_set_inputs), training_set_outputs)
 
         ### train network
-
-    
-    print(f"New synaptic weights after training: \n{neural_network.synaptic_weights}")
 
     # Test the neural network with a new situation.
 
     print(f"Correct answer: \n{training_set_outputs}")
-    print(f"Final answer: \n{neural_network.think(training_set_inputs)}")###
+    print(f"Final answer: \n{neuralnet.think(training_set_inputs)}")###
     print(f"Considering new situation [1, 0, 0] -> ?: {neural_network.think(array([1, 0, 0]))}")
 ######
 
@@ -461,3 +379,9 @@ if __name__ == "__main__":
 #     ## if BIAS == 'synapse':
 #         # you get the idea?# yeah, but I'm NOT doing that type of thing here...
 #     return input * weightValue
+    
+
+# for netowrks with parents, a genome should be supplied by the Sim( pulled from the avaliable population).
+# Each gene should come with a bias for each internalNeuron whether that is the gene that initialised the neuron or not.
+# a genome doen't know how many internal Neurons it has until it is built into a brain
+
