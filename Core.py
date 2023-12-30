@@ -65,7 +65,7 @@ class Player:
 
     def getPressed(self):
         return pygame.key.get_pressed()
-    
+
     def queueUp(self):
         waitingPlayers.append(self.ID)
 
@@ -76,7 +76,7 @@ class Player:
 # self.brain = NeuralNetwork(expectedOutputs:'int', genes:'list[str]', irradiation:"float"=0.01):
 # agent.brain.seed()
 ### Gets called by the Sim when the Network has been selected to aid in repopulation.
-    
+
 
 
 
@@ -101,7 +101,9 @@ class Agent:# Recieves rewards and observations, and returns an action
             pass### Make the object recieve input from input devices( wait on the User)
             # THIS Agent is a Player
 
-
+    def rollInitiative(self):
+        # self.initiative =
+        pass
 
 
 
@@ -144,6 +146,43 @@ class Sim:
 
 
 
+# MAIN BLOCK
+if __name__ == "__main__":
+    pass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -167,7 +206,7 @@ class Sim:
 # def display_score(time_passed):# text data
 # 		text_surf = font.render(str(time_passed // 1000), False, 'white')
 # 		text_rect = text_surf.get_rect(center = (SCREEN_SIZE[0] / 2, 100))
-        
+
 # 		win.blit(text_surf, text_rect)# score display
 # 		pygame.draw.rect(win, 'white', text_rect.inflate(32,32),4,5)# frame
 # def display_lives(num_lifes):

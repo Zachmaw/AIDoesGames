@@ -1,19 +1,60 @@
 # import pygame
 
 
+
+
 # so the Sim class calls one of the Game classes( which all inherit from the Env class.), but the advanceTime function is called where exactly??
 # The Simulation is the one who advances time in the environment by one step/turn when it has the responses from the Agents!
 
-# All environments are either turn based or time based, but...
+# All environments start off initiative based, but TurnBased modifies it slightly...
 class Env:
     def __init__(self, id):# The id is given to us from the Simulation
         self.ready = False
-        self.id = id
-        self.tookTurn = {}### use this somehow to build initiative order based environments.
-        self.moves = {}
+        self.runid = id
+        ### What about the initiative tracker program I found? Can't that help? Here's what's left of it.
+        self.init_order = list()
+        self.init_order.append((20, "LairAction"))
+
+    def addAgent(self, agentID:"tuple(int)", speed:"int"):
+
+        #####
+        # What I need to do is either put the AgentID in the initiative order list
+        # or put the Agent itself in the list?
+        # NNs can clone, so technichally I don't HAVE to ever keep parents alive, right?
+        # If that's the case, I can delete the selected genome from the gene pool the moment I build it into a NN?
+        # When I build the NN, place it in initiative. but it needs a speed value...
+        # It's time to extend the genome again, I guess... This gives me four bits
+        # Let's put it at the beginning and trim it off before it get's to decodeBitstring()
+        # Using these 16 permutations, I have 16 values for my initiative order...
+        # Env should always have a value of 0 16 or 17, depending on sorting and the binary thing...
+        # This speed value should be passed to addAgent along with the same Agents ID.
+        #
+        # I need to have a gene pool to reference with agentID
+        # A gene pool can be:
+        # A seperate folder for each Environments gene pool.
+        # Where each genome in the pool/folder is a txt file.
+        # where each gene in the genome/txt is represented as a string of hexdec characters.
+        #
+        # The next thing is the naming method for Genomes in storage.
+        #
+        #####
+
+        # with open("GenePools\\testPool\\")
+        #     genome =
+
+        self.init_order.append(speed, str("LairAction"))
+
+        # sorts by initiative roll
+        self.init_order = sorted(self.init_order, key=itemgetter(1), reverse=True)
 
 
-    def advanceTime(self, actionVector:'list[int]', envRules:'function'):
+
+
+
+
+
+
+    def advanceOneStep(self, actionVector:'list[int]', envRules:'function'):
         '''
         should take in the action of the current agent and\n
         return a list of observations that can be made about the environment\n
@@ -23,8 +64,14 @@ class Env:
         It is important to maintain the order of Agent actions.'''
         # which is why I'm going with the initiative method.
         # time advances one tick with each revolution of the initiative tracker.
-        ### if this agent is first in the turn order, increase SimRuntime by one tick.
+        ### if this agent is the Environment, increase SimRuntime by one tick.
+        # that's it, save for specific Environments.
         return envRules(actionVector)
+
+
+
+
+
 
 
 
@@ -43,77 +90,26 @@ import random
 # or something, just quit the program (CTRL + C) and run the script again to
 # start over.
 
-# Player setup
-players = input('How many PCs? ')
-player_names = []
-for i in range(0, players):
-    name = input('PC ' + str(i + 1) + ' name: ')
-    player_names.append(name)
 
-# New encounter
-new_fight = True
 
-while new_fight is True:
 
-    # Type in each player's initiative total
-    player_init = []
-    for i in range(0, players):
-        pinit = input(player_names[i] + ' initiative total: ')
-        player_init.append(pinit)
-
-    # Combines the PC names with their initiative rolls in pairs in a list
-    player_list = [None] * players
-    for i in range(0, players):
-        player_list[i] = ('- ' + player_names[i]), player_init[i]
-
-    # How many enemies do we have?
-    enemies = input('How many Monsters? ')
-
-    # Type in each enemy's initiative modifier
-    enemy_init = []
-    for i in range(0, enemies):
-        einit = input('Monster ' + str(i + 1) + ' initiative modifier? ')
-        enemy_init.append(einit)
-
-    # Rolls each enemy's initiative, adding their modifier, adds these rolls
-    # into a list with the enemy names, in pairs
-    monster_list = []
-    for i in range(0, enemies):
-        init_roll = random.randint(1, (20 + enemy_init[i]))
-        monster_list.append(['- Monster ' + str(i + 1), init_roll])
-
-    # Combines the list and sorts by initiative roll
-    init_list = player_list + monster_list
-    init_list = sorted(init_list, key=itemgetter(1), reverse=True)
-
-    print("\n")
-    print("--- Initiative list ---")
-
-    # Prints the list in readable strings without brackets/commas etc
-    for entry in init_list:
-        print(str(entry).strip("[]()").replace("'", "").replace(",", ":"))
-
-    # Choice to start a new battle with the same group of PCs, or quit
-    print("\n")
-    again = input('Hit the enter key to start a new battle, or "n" to exit...')
-    if again == "n":
-        new_fight = False
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
+
+
 class DefaultGameObj(Env):
-    def __init__(self, id):### add the other atributes a game object would have
+    def __init__(self, id, maxPlayers):### add the other atributes a game object would have
         super().__init__(id)
-        self.maxPlayers = 7# This game has a player limit
-        self.wins = {}# it also can be won.
-        self.ties = 0# In case nobody could claim the game.
+        self.maxAgents = maxPlayers# The player limit
 
     def awaitPlayerConnections(self):
         trying = True
         while trying:
             try:
                 playerCount = int(input('How many players?'))
-                if playerCount > self.maxPlayers:
-                    print(f"The number is too high! The highest number of players you can have in this environment is {self.maxPlayers}")
+                if playerCount > self.maxAgents:
+                    print(f"The number is too high! The highest number of players you can have in this environment is {self.maxAgents}")
                     Exception("The number is too high!(playerCount above maxPlayers)")
                 for i in playerCount:
                     self.tookTurn[f'Player{str(i)}'] = False
@@ -121,7 +117,7 @@ class DefaultGameObj(Env):
                     self.wins[f'Player{str(i)}'] = 0
                 trying = False
             except:
-                print('Please, try again.')
+                print('Please, try again.\nJust for this game, ')
         temp2 = input('')
         pass###
 
@@ -142,9 +138,6 @@ class DefaultGameObj(Env):
     def connected(self):
         '''Check self.ready'''
         return self.ready
-
-    def bothWent(self):
-        return self.p1Went and self.p2Went
 
     def winner(self):
 
@@ -167,15 +160,28 @@ class DefaultGameObj(Env):
 
         return winner
 
+
+
+
+
+
+
+class TurnBased(DefaultGameObj):
+    def __init__(self, id):
+        super().__init__(id)
+        self.tookTurn = {}
+        self.moves = {}
+        ### and essentially just make it so if it's not that Agent's turn, it is blindfolded
+
+
+
     def resetWent(self):
         self.p1Went = False
         self.p2Went = False
 
-
-
-
-
-
+    def allWent(self):
+        ### make variable to number of players
+        return self.p1Went and self.p2Went
 
 
 

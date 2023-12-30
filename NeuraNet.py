@@ -2,6 +2,8 @@
 # IMPORTS
 from numpy import random, exp, exp2, tanh, heaviside, array#, dot, transpose
 from math import ceil
+import os.path
+
 # import timeit
 # CONSTANT INIT
 HEX_OPTIONS = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"]
@@ -10,6 +12,14 @@ for i in range(16):# could only get -8 to +7, but that's fine because a bias of 
     Biases.append(int(i - 8))
 # SETTINGS INIT
 # FUNCTIONS
+def uniquify(path):
+    filename, extension = os.path.splitext(path)
+    counter = 0
+    while os.path.exists(path):
+        path = filename + " (" + str(counter) + ")" + extension
+        counter += 1
+    return (path, counter)
+
 def mult(weightValue:'float', input:"float"):
     '''return float'''
     return input * weightValue
@@ -72,18 +82,18 @@ def mutateHexdec(gene:"str", radiationBonus:"float"):
             gene = replace_str_index(gene, i, HEX_OPTIONS[int(hextobin(gene[i]), 2) + random.choice([1, 15]) % 16])
     return gene
 
-def perceptron(node:'tuple(list[float], float, float)', activationFuncOfChoice):# AKA, it shouldn't have an ID by this point. No lookups.
+def perceptron(node:"tuple[list[float], int, float]", activationFuncOfChoice):# AKA, it shouldn't have an ID by this point. No lookups.
     tempN = float()# add up the inputs which are already stored
     for floa in node[0]:
         tempN += floa
-    result = activationFuncOfChoice(tempN + node[1])# the result of a node is a float no matter what, internal(-1,1), output(0,1). But then we binary the output nodes. 
+    result = activationFuncOfChoice(tempN + node[1])# the result of a node is a float no matter what, internal(-1,1), output(0,1). But then we binary the output nodes.
     return (list(), node[1], result)# add bias# Activate.
 
 # CLASSES
 class NeuralNetwork():
     # For Internal Nodes, ID is the node's ID as an int key in self.internalNodes:'dict'
     # For Output Nodes, ID is merely the node's index in self.outputNodes:'list'
-    def __init__(self, outputCount:'int', generation:"int", genes:'list[str]'=None, irradiation:"float"=0.01):
+    def __init__(self, outputCount:'int'=1, generation:"int"=1, genes:'list[str]'=None, irradiation:"float"=0.01):
         ### self.costToExist = (int(), float())# cost to exist per turn
         if genes == None:# make some genes based on generation
             genes = init_random_Genome(ceil(generation/10))## might lower this number, likely no further than 7.
@@ -102,7 +112,7 @@ class NeuralNetwork():
         for i in range(len(genes)):# run through all the genes in the genome# Decode all the connections into tuples.# for synapse(index) in the_genome:
             bitstring = mutateBitstring(hextobin(mutateHexdec(genes[i], irradiation)))# MUTATION * 2 COMBO | By way of irradiation and for growing NNs.
             genome.append(binToHex(bitstring))
-            decodedSynapse = (# disect it 
+            decodedSynapse = (# disect it
                 int(bitstring[0]),# 0 is inputInput, 1 is internal input. 1 bit
                 int(bitstring[1:8], 2),# Specify which node by its ID in that group. 7 bits
                 int(bitstring[8]),# 0 is output, 1 is internal. 1 bit
@@ -231,16 +241,30 @@ class NeuralNetwork():
 # MAIN BLOCK
 if __name__ == "__main__":
     # We model a simple nn, with 3 inputs, 1 output and one random gene per 10 attempts.
-    #Intialise a single neuron neural network.
-    neuralnet = NeuralNetwork(1, 1)
+    # Intialise a single neuron neural network.
+    neuralnet = NeuralNetwork()
     frame = neuralnet.think([random.random(), 0.5, 1])
     print(frame)
-    generation = 1
-    genePool = list()
-    maxGenePool = 31
 
-
-
+    ### generate a population from the one, size 32
+    for i in range(32):
+        path, shouldEquali = uniquify("GenePools\\testPool\\test_.txt")
+        with open(path, "w") as f:
+            f.write(f"Your GENOME goes here\n{path}\n{i} : {shouldEquali}")
+            ### next step looks like GA shit...maybe?
+            # I have both mutations happen in NN init.
+            # I can almost guarentee cloning, so if I want a clone, I should clone 2 backups.
+            # Otherwise, I have radiation and Toxic waste to aid in mutation.
+            # So what you're saying is, alterations to the Genome don't occur until
+            # a NN is being initialised( with rads and toxins).
+            # I can't populate a gene pool.
+            # I have to just keep the parent genome and generate a NN each time I need one?
+            # That almost seems better, no?
+            # Because the only genomes that are gonna be kept for parents
+            # are the best ones from the previous run of the Environment.
+            # Yeah, that seems like a way better system that generating a gene pool.
+            # so that means I need to:
+            # Save the "seed" of the best/victorious Agents
 
     # The training set. We have 4 examples, each consisting of 3 input values
     # and 1 output value.
@@ -262,7 +286,7 @@ if __name__ == "__main__":
 
     print(f"Correct answer: \n{training_set_outputs}")
     print(f"Final answer: \n{neuralnet.think(training_set_inputs)}")###
-    print(f"Considering new situation [1, 0, 0] -> ?: {neural_network.think(array([1, 0, 0]))}")
+    print(f"Considering new situation [1, 0, 0] -> ?: {neuralnet.think(array([1, 0, 0]))}")
 ######
 
 # I'm confident we cant fully solve the problem presented in the new Situation with only one neuron
@@ -379,9 +403,8 @@ if __name__ == "__main__":
 #     ## if BIAS == 'synapse':
 #         # you get the idea?# yeah, but I'm NOT doing that type of thing here...
 #     return input * weightValue
-    
+
 
 # for netowrks with parents, a genome should be supplied by the Sim( pulled from the avaliable population).
 # Each gene should come with a bias for each internalNeuron whether that is the gene that initialised the neuron or not.
 # a genome doen't know how many internal Neurons it has until it is built into a brain
-
