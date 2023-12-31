@@ -251,7 +251,7 @@ if __name__ == "__main__":
         path, shouldEquali = uniquify("GenePools\\testPool\\test_.txt")
         with open(path, "w") as f:
             f.write(f"Your GENOME goes here\n{path}\n{i} : {shouldEquali}")
-            ### next step looks like GA shit...maybe?
+            ### next step looks like GA shit...maybe?# The Sim can do it!
             # I have both mutations happen in NN init.
             # I can almost guarentee cloning, so if I want a clone, I should clone 2 backups.
             # Otherwise, I have radiation and Toxic waste to aid in mutation.
@@ -283,128 +283,37 @@ if __name__ == "__main__":
         ### train network
 
     # Test the neural network with a new situation.
-
     print(f"Correct answer: \n{training_set_outputs}")
     print(f"Final answer: \n{neuralnet.think(training_set_inputs)}")###
-    print(f"Considering new situation [1, 0, 0] -> ?: {neuralnet.think(array([1, 0, 0]))}")
-######
-
+    print(f"Considering new situation/Environment [1, 0, 0] -> ?: {neuralnet.think(array([1, 0, 0]))}")
 # I'm confident we cant fully solve the problem presented in the new Situation with only one neuron
-
-# # # # INSPIRATION CODE
-# from numpy import sqrt
-#
-# # DEFINE THE NETWORK
-# # Generate random numbers within a bounded normal distribution
-# # def truncated_normal(mean=0, sd=1, low=0, upp=10):
-# #     return truncnorm((low - mean) / sd, (upp - mean) / sd, loc=mean, scale=sd)
-#
-# # Create the ‘Nnetwork’ class and define its arguments:
-# # Set the number of neurons/nodes for each layer
-# # and initialize the weight matrices:
-# class Nnetwork:
-#     def __init__(self,
-#                  no_of_in_nodes,
-#                  no_of_out_nodes,
-#                  no_of_hidden_nodes,
-#                  learning_rate):
-#         self.no_of_in_nodes = no_of_in_nodes
-#         self.no_of_out_nodes = no_of_out_nodes
-#         self.no_of_hidden_nodes = no_of_hidden_nodes
-#         self.learning_rate = learning_rate
-#         self.create_weight_matrices()
-#
-#     def create_weight_matrices(self):
-#         """ A method to initialize the weight matrices of the neural network"""
-#         rad = 1 / sqrt(self.no_of_in_nodes)
-#         X = truncated_normal(mean=0, sd=1, low=-rad, upp=rad)
-#         self.weights_in_hidden = X.rvs((self.no_of_hidden_nodes, self.no_of_in_nodes))
-#         rad = 1 / sqrt(self.no_of_hidden_nodes)
-#         X = truncated_normal(mean=0, sd=1, low=-rad, upp=rad)
-#         self.weights_hidden_out = X.rvs((self.no_of_out_nodes, self.no_of_hidden_nodes))
-#
-#     def train(self, input_vector, target_vector):
-#         pass # More work is needed to train the network
-#
-#     def run(self, input_vector):
-#         """
-#         running the network with an input vector 'input_vector'.
-#         'input_vector' can be tuple, list or ndarray
-#         """
-#         # Turn the input vector into a column vector:
-#         input_vector = array(input_vector, ndmin=2).T
-#         # activation_function() implements the expit function,
-#         # which is an implementation of the sigmoid function:
-#         input_hidden = activation_function(self.weights_in_hidden @   input_vector)
-#         output_vector = activation_function(self.weights_hidden_out @ input_hidden)
-#         return output_vector
-#
-# # # RUN THE NETWORK AND GET A RESULT
-# # Initialize an instance of the class:
-# simple_network = Nnetwork(no_of_in_nodes=2,
-#                                no_of_out_nodes=2,
-#                                no_of_hidden_nodes=4,
-#                                learning_rate=0.6)
-# # Run simple_network for arrays, lists and tuples with shape (2):
-# # and get a result:
-# simple_network.run([(3, 4)])
 
 
 
 # # # # # DEV NOTES
 # the comment key I always go by
 # (hopefully )Informative comment.
-## something to come back to when the project is complete.
+## something to come back to when the project is( nearly) complete.
 ### TO-DO
-#### probably an accident.
-##### Bookmark. I had to leave off here.
+#### probably an typo.
+##### Bookmark I had to leave off at.
 # yep... Thaaat's my system...
 
 # Just thought:
 # put the agent in a client connection for a socket based system
 # so the environment runs in the server.
+#
 # what does the environment do again?
 # cuz the agents recieve observations( in the form of a list of floats)
 # and return/send outputs( as a list of bool?)
-
-# # so I have two options, right?
-# # the one where each layer is calculated before moving to the next
-# # and the way that guy did it...
-# # where instead of the inputs being passed down the layers and transformed along the way...
-# # instead, the inputs are just there and the connections are calculated in order.
-# I think I've created a combination of the two concepts
-# if so, I've surely done it by structuring the network with all the outputs neurons in the last lasyer, first.
-
-# FROM NEAR THE END OF NeuralNetwork.__init__
-            # in one run of this code up to this point should leave us with
-            # build output layer from outputCount and genes[bias]
-            # the layer X1
-            # decode genome to get all Connections
-            # init all internal Nodes from output IDs of decoded Connections
-            # build base connection layer from output layer and internal nodes
-            # Layer Y1
-                # if no connections left or no connections output to outputs: brain done
-            # loop
-            # loop: i += 1
-            # cycle through remaining connections collecting those whos output IDs are in list of last layer input IDs.
-                # get input IDs from previous layer of Connections
-                # build next internal Neuron layer from input IDs and internal Nodes
-                # Layer Xi+1
-                # build next Connection layer from input IDs and remaining Connections
-                # Layer Yi+1
-                    # if no connections left to look at or no connections output to prevLayerInputs: brain done
-                    # so, it stops when it either:
-                    #     runs out of connections
-                    #     or ends the loop with an empty layer of connections
+# Every "timeStep" the Sim goes down the initiative order
+# at each Agent on the list, asking it's response to currentEnvOuts
+# currentEnvOuts is being kept up to date between Agents, isn't it...
 
 
-# def mult(weightValue:'float', input):
-#     '''return float'''
-#     ## if BIAS == 'synapse':
-#         # you get the idea?# yeah, but I'm NOT doing that type of thing here...
-#     return input * weightValue
-
-
-# for netowrks with parents, a genome should be supplied by the Sim( pulled from the avaliable population).
+# When it comes to the Genetic Algorythm, the Sim can handle it.
+# since each genome in the pool is just the successors of the previous generation, as opposed to untested whelplings, 
+# When building a NN I can create the input genome to that be based on as many parent genomes as I want...
+# (again with or without mutation based on waste)
 # Each gene should come with a bias for each internalNeuron whether that is the gene that initialised the neuron or not.
 # a genome doen't know how many internal Neurons it has until it is built into a brain
