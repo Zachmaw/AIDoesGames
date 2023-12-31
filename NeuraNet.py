@@ -240,31 +240,50 @@ class NeuralNetwork():
 
 # MAIN BLOCK
 if __name__ == "__main__":
+    while True:
+        try:
+            generationCap = int(input("Generation number to stop at..."))
+            runsPerGeneration = int(input("Number of attepts per generation..."))
+            break
+        except:
+            print("We got some Non-numbers in there, Friend.\nPlease try again.")
     # We model a simple nn, with 3 inputs, 1 output and one random gene per 10 attempts.
     # Intialise a single neuron neural network.
     neuralnet = NeuralNetwork()
-    frame = neuralnet.think([random.random(), 0.5, 1])
+    frame = neuralnet.think([0.0, 0.5, 1.0])
     print(frame)
+    parentGenes = neuralnet.seed()
+    for i in range(generationCap):
+        for n in range(runsPerGeneration):
+            pass
+            # make a NN
+            neuralnet = NeuralNetwork(1, )
+            # ask it a question
+            # if it's answer is in at least nth place
+                # Save it's genome
+            # kill the genome
+            # for larger games, all we need do is extend the definition of "question".
+            #
 
-    ### generate a population from the one, size 32
-    for i in range(32):
-        path, shouldEquali = uniquify("GenePools\\testPool\\test_.txt")
-        with open(path, "w") as f:
-            f.write(f"Your GENOME goes here\n{path}\n{i} : {shouldEquali}")
-            ### next step looks like GA shit...maybe?# The Sim can do it!
-            # I have both mutations happen in NN init.
-            # I can almost guarentee cloning, so if I want a clone, I should clone 2 backups.
-            # Otherwise, I have radiation and Toxic waste to aid in mutation.
-            # So what you're saying is, alterations to the Genome don't occur until
-            # a NN is being initialised( with rads and toxins).
-            # I can't populate a gene pool.
-            # I have to just keep the parent genome and generate a NN each time I need one?
-            # That almost seems better, no?
-            # Because the only genomes that are gonna be kept for parents
-            # are the best ones from the previous run of the Environment.
-            # Yeah, that seems like a way better system that generating a gene pool.
-            # so that means I need to:
-            # Save the "seed" of the best/victorious Agents
+
+
+            # path, shouldEquali = uniquify("GenePools\\testPool\\test_.txt")
+            # with open(path, "w") as f:
+            #     f.write(f"Your GENOME goes here\n{path}\n{i} : {shouldEquali}")
+                ### next step looks like GA shit...maybe?# The Sim can do it!
+                # I have both mutations happen in NN init.
+                # I can almost guarentee cloning, so if I want a clone, I should clone 2 backups.
+                # Otherwise, I have radiation and Toxic waste to aid in mutation.
+                # So what you're saying is, alterations to the Genome don't occur until
+                # a NN is being initialised( with rads and toxins).
+                # I can't populate a gene pool.
+                # I have to just keep the parent genome and generate a NN each time I need one?
+                # That almost seems better, no?
+                # Because the only genomes that are gonna be kept for parents
+                # are the best ones from the previous run of the Environment.
+                # Yeah, that seems like a way better system that generating a gene pool.
+                # so that means I need to:
+                # Save the "seed" of the best/victorious Agents
 
     # The training set. We have 4 examples, each consisting of 3 input values
     # and 1 output value.
@@ -312,7 +331,7 @@ if __name__ == "__main__":
 
 
 # When it comes to the Genetic Algorythm, the Sim can handle it.
-# since each genome in the pool is just the successors of the previous generation, as opposed to untested whelplings, 
+# since each genome in the pool is just the successors of the previous generation, as opposed to untested whelplings,
 # When building a NN I can create the input genome to that be based on as many parent genomes as I want...
 # (again with or without mutation based on waste)
 # Each gene should come with a bias for each internalNeuron whether that is the gene that initialised the neuron or not.
