@@ -40,10 +40,21 @@ class Env:
         self.init_order.append((20, "LairAction"))
 
     def addAgent(self, agentID:"tuple(int)", speed:"int"):
-
+        self.init_order.append(speed, str("LairAction"))
+        # sorts by initiative roll
+        self.init_order = sorted(self.init_order, key=itemgetter(1), reverse=True)
         #####
         # What I need to do is either put the AgentID in the initiative order list
         # or put the Agent itself in the list?
+        # well, when I build the NN from a saved txt file Genome, I have to store it in memory.
+        # no point using NN IDs pre generation. 
+        # Generate NN, store it in dict with key as f"NN{playerNumber}"
+
+
+
+
+
+
         # NNs can clone, so technichally I don't HAVE to ever keep parents alive, right?
         # If that's the case, I can delete the selected genome from the gene pool the moment I build it into a NN?
         # When I build the NN, place it in initiative. but it needs a speed value...
@@ -60,22 +71,11 @@ class Env:
         # where each gene in the genome/txt is represented as a string of hexdec characters.
         #
         # The next thing is the naming method for Genomes in storage.
-        #
+        # The only Genomes in storage are the successful/best ones.
         #####
 
         # with open("GenePools\\testPool\\")
-        #     genome =
-
-        self.init_order.append(speed, str("LairAction"))
-
-        # sorts by initiative roll
-        self.init_order = sorted(self.init_order, key=itemgetter(1), reverse=True)
-
-
-
-
-
-
+        #     avaliableGenePool =
 
 
     def advanceOneStep(self, actionVector:'list[int]', envRules:'function'):
@@ -91,8 +91,6 @@ class Env:
         ### if this agent is the Environment, increase SimRuntime by one tick.
         # that's it, save for specific Environments.
         return envRules(actionVector)
-
-
 
 
 class DefaultGameObj(Env):
@@ -118,7 +116,7 @@ class DefaultGameObj(Env):
         temp2 = input('')
         pass###
 
-    def get_player_move(self, p):
+    def get_player_choice(self, p):
         """
         :param p: [0,1]
         :return: Move
@@ -136,7 +134,7 @@ class DefaultGameObj(Env):
         '''Check self.ready'''
         return self.ready
 
-    def winner(self):
+    def checkWinner(self):
 
         p1 = self.moves[0].upper()[0]
         p2 = self.moves[1].upper()[0]
@@ -154,10 +152,7 @@ class DefaultGameObj(Env):
             winner = 0
         elif p1 == "P" and p2 == "S":
             winner = 1
-
         return winner
-
-
 
 
 class TurnBased(DefaultGameObj):

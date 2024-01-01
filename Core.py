@@ -41,12 +41,17 @@ import pygame, os
 from sys import exit
 import random
 from NeuraNet import NeuralNetwork
-from environments import Base
+from environments.Base import *
 
 
 
 
 
+
+
+def pickEnv(name):
+    klass = EnvList(name)
+    return klass()
 
 
 
@@ -59,12 +64,15 @@ for (dirpath, dirnames, filenames) in os.walk(os.path.join(os.path.realpath(__fi
         if not f == "Base.py":
             EnvList[str(f)[:-3]] = ### HOW??? Gotta assign the specific class names...
     break
+# Does each Env NEED to be a class?
+# all Environments inherit from the base Env class because they all need to
+# remember their own internal state
+# 
 
-def pickEnv(name):
-    klass = EnvList(name)
-    return klass()
 
-
+# Let's just get one working
+# 
+class numberGuess()
 
 
 
