@@ -31,6 +31,10 @@ import random
 # The Simulation is the one who advances time in the environment by one step/turn when it has the responses from the Agents!
 
 # All environments start off initiative based, but TurnBased modifies it slightly...
+# How? Well, let's start be explaining Initiative based order.
+# First, the Environment is selected. The Env rules are loaded into the Env class or it's child.
+# Then, from envRules, we know the expected NN outputs and player count and can populate the Sim with the NN/Agents and their speed.
+# Sim
 class Env:
     def __init__(self, id):# The id is given to us from the Simulation
         self.ready = False
@@ -39,7 +43,7 @@ class Env:
         self.init_order = list()
         self.init_order.append((20, "LairAction"))
 
-    def addAgent(self, agentID:"tuple(int)", speed:"int"):
+    def addAgent(self, agentID:"tuple(int)", speed:"int"):### why is that a tuple? how big is it suposed to be?
         self.init_order.append(speed, str("LairAction"))
         # sorts by initiative roll
         self.init_order = sorted(self.init_order, key=itemgetter(1), reverse=True)
@@ -47,14 +51,14 @@ class Env:
         # What I need to do is either put the AgentID in the initiative order list
         # or put the Agent itself in the list?
         # well, when I build the NN from a saved txt file Genome, I have to store it in memory.
-        # no point using NN IDs pre generation. 
+        # no point using NN IDs pre generation.
         # Generate NN, store it in dict with key as f"NN{playerNumber}"
 
 
 
 
 
-
+        ### IMPLEMENT SPEED GENE
         # NNs can clone, so technichally I don't HAVE to ever keep parents alive, right?
         # If that's the case, I can delete the selected genome from the gene pool the moment I build it into a NN?
         # When I build the NN, place it in initiative. but it needs a speed value...
@@ -92,27 +96,33 @@ class Env:
         # that's it, save for specific Environments.
         return envRules(actionVector)
 
+    def setRules(self, gameRules:"function"):
+        self.rules = gameRules
+    def actAndObserve(self, actionVector):
+        return self.rules(actionVector)
+
 
 class DefaultGameObj(Env):
-    def __init__(self, id, maxPlayers):### add the other atributes a game object would have
+    def __init__(self, id, maxPlayers):### add the other atributes a game object would have( like??)
         super().__init__(id)
-        self.maxAgents = maxPlayers# The player limit
+        self.playerLimit = maxPlayers# The player limit
+        self.players = {}# list of bool with length = maxPlayers
 
     def awaitPlayerConnections(self):
         trying = True
         while trying:
             try:
                 playerCount = int(input('How many players?'))
-                if playerCount > self.maxAgents:
-                    print(f"The number is too high! The highest number of players you can have in this environment is {self.maxAgents}")
+                if playerCount > self.playerLimit:
+                    print(f"The number is too high! The highest number of players you can have in this environment is {self.playerLimit}")
                     Exception("The number is too high!(playerCount above maxPlayers)")
-                for i in playerCount:
+                for i in range(playerCount):### add each player to self.players
                     self.tookTurn[f'Player{str(i)}'] = False
                     self.moves[f'Player{str(i)}'] = None
                     self.wins[f'Player{str(i)}'] = 0
                 trying = False
             except:
-                print('Please, try again.\nJust for this game, ')
+                print('Please, try again.\nJust for this game, ')### incomplete
         temp2 = input('')
         pass###
 
@@ -135,7 +145,8 @@ class DefaultGameObj(Env):
         return self.ready
 
     def checkWinner(self):
-
+        # cycle through all players tracking which response is closest to the selected number
+        # maybe track responses in a list, sort and return the top result
         p1 = self.moves[0].upper()[0]
         p2 = self.moves[1].upper()[0]
 
