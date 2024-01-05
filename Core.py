@@ -1,6 +1,5 @@
 
 
-
 # Obtain settings regarding the size/position of the game window.
 # call a selected environment from the environments folder
 # The Simulation initializes an Environment, checking it's maxPopulation.
@@ -17,9 +16,6 @@
 # Sim loads the specified environment. currentEnv =
 
 
-
-
-# I wrote on phone:
 # we need to:
     # select an environment
         # Environments vary in max Agents per run
@@ -135,6 +131,30 @@ class Agent:# Recieves rewards and observations, and returns an action
 
 
 
+EnvList = {}
+# name_to_class = dict(some=SomeClass,
+#                      other=OtherClass)
+
+for (dirpath, dirnames, filenames) in os.walk(os.path.join(os.path.realpath(__file__), "environments")):
+    for f in filenames:### make sure we don't add Base to that dict
+        if not f == "base.py":
+            EnvList[str(f)[:-3]] = ### HOW??? Gotta assign the specific class names...
+    break
+# Does each Env NEED to be a class?
+# all Environments inherit from the base Env class because they all need to
+# remember their own internal state
+# uhh, no. That's *why* they're a class, not why they inherit from one.
+
+
+# Let's just get one working
+#
+# class numberGuess()
+
+
+
+currentEnv = EnvList[str(input())]
+
+
 
 class Sim:
     def __init__(self, game:'str') -> None:### game needs to be a string
@@ -152,10 +172,48 @@ class Sim:
         # if keepEnv:
         #     pass### ugh
         self.environment = newEnv
+
     def saveGenome(self):
         with open("fancyTitle.txt", "w") as f:
             f.writelines(self.initOrder[currentInitiative].seed())
 
+    def addAgent(self, agentID:"tuple(int)", speed:"int"):### why is that a tuple? how big is it suposed to be?
+        self.init_order.append(speed, str("LairAction"))
+        # sorts by initiative roll
+        self.init_order = sorted(self.init_order, key=itemgetter(1), reverse=True)
+        #####
+        # What I need to do is either put the AgentID in the initiative order list
+        # or put the Agent itself in the list?
+        # well, when I build the NN from a saved txt file Genome, I have to store it in Sim memory as a list named initOrder.
+
+        # Generate NN, store it in dict with key as f"NN{playerNumber}"
+
+
+
+
+
+        ### IMPLEMENT SPEED GENE
+        # NNs can clone, so technichally I don't HAVE to ever keep parents alive, right?
+        # If that's the case, I can delete the selected genome from the gene pool the moment I build it into a NN?
+        # When I build the NN, place it in initiative. but it needs a speed value...
+        # It's time to extend the genome again, I guess... This gives me four bits
+        # Let's put it at the beginning and trim it off before it get's to decodeBitstring()
+        # Using these 16 permutations, I have 16 values for my initiative order...
+        # Env should always have a value of 0 16 or 17, depending on sorting and the binary thing...
+        # This speed value should be passed to addAgent along with the same Agents ID.
+        #
+        # I need to have a gene pool to reference with agentID
+        # A gene pool can be:
+        # A seperate folder for each Environments gene pool.
+        # Where each genome in the pool/folder is a txt file.
+        # where each gene in the genome/txt is represented as a string of hexdec characters.
+        #
+        # The next thing is the naming method for Genomes in storage.
+        # The only Genomes in storage are the successful/best ones.
+        #####
+
+        # with open("GenePools\\testPool\\")
+        #     avaliableGenePool =
 
 
 # class Simulation:

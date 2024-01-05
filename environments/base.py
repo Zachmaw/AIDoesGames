@@ -82,7 +82,6 @@ class Env:
         # with open("GenePools\\testPool\\")
         #     avaliableGenePool =
 
-
     def advanceOneStep(self, actionVector:'list[int]', envRules:'function'):
         '''
         should take in the action of the current agent and\n
