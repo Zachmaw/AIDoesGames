@@ -43,44 +43,6 @@ class Env:
         self.init_order = list()
         self.init_order.append((20, "LairAction"))
 
-    def addAgent(self, agentID:"tuple(int)", speed:"int"):### why is that a tuple? how big is it suposed to be?
-        self.init_order.append(speed, str("LairAction"))
-        # sorts by initiative roll
-        self.init_order = sorted(self.init_order, key=itemgetter(1), reverse=True)
-        #####
-        # What I need to do is either put the AgentID in the initiative order list
-        # or put the Agent itself in the list?
-        # well, when I build the NN from a saved txt file Genome, I have to store it in memory.
-        # no point using NN IDs pre generation.
-        # Generate NN, store it in dict with key as f"NN{playerNumber}"
-
-
-
-
-
-        ### IMPLEMENT SPEED GENE
-        # NNs can clone, so technichally I don't HAVE to ever keep parents alive, right?
-        # If that's the case, I can delete the selected genome from the gene pool the moment I build it into a NN?
-        # When I build the NN, place it in initiative. but it needs a speed value...
-        # It's time to extend the genome again, I guess... This gives me four bits
-        # Let's put it at the beginning and trim it off before it get's to decodeBitstring()
-        # Using these 16 permutations, I have 16 values for my initiative order...
-        # Env should always have a value of 0 16 or 17, depending on sorting and the binary thing...
-        # This speed value should be passed to addAgent along with the same Agents ID.
-        #
-        # I need to have a gene pool to reference with agentID
-        # A gene pool can be:
-        # A seperate folder for each Environments gene pool.
-        # Where each genome in the pool/folder is a txt file.
-        # where each gene in the genome/txt is represented as a string of hexdec characters.
-        #
-        # The next thing is the naming method for Genomes in storage.
-        # The only Genomes in storage are the successful/best ones.
-        #####
-
-        # with open("GenePools\\testPool\\")
-        #     avaliableGenePool =
-
 
     def advanceOneStep(self, actionVector:'list[int]', envRules:'function'):
         '''
