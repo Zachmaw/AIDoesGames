@@ -235,8 +235,12 @@ class NeuralNetwork():
                 thinkingLayerNeurons += 1# gather input values and proccess the layer of Nodes with each advancement.
         return self.proccessFinalNodeLayer(self)# run final output node layer
 
-    def seed(self):
-        return self.genome
+    def seed(self):### does a txt file being read in show line breaks?
+        '''returns a genome ready to by saved to a txt doc or '''
+        temp = list()
+        for gene in self.genome:
+            temp.append(f'\\n{gene}')
+        return temp
 
 # MAIN BLOCK
 if __name__ == "__main__":

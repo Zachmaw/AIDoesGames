@@ -14,7 +14,7 @@
 # because like the Agent and the Environment are seperate...# duh
 # So I mean, We run Core.py
 # Sim says, "Okay, Human. Which Environment will we be running Agents in, today?"
-# Sim loads the specified environment. currentEnv = 
+# Sim loads the specified environment. currentEnv =
 
 
 
@@ -41,7 +41,7 @@ import pygame, os
 from sys import exit
 import random
 from NeuraNet import NeuralNetwork
-from environments.Base import *
+from environments.base import *
 
 
 
@@ -67,11 +67,11 @@ for (dirpath, dirnames, filenames) in os.walk(os.path.join(os.path.realpath(__fi
 # Does each Env NEED to be a class?
 # all Environments inherit from the base Env class because they all need to
 # remember their own internal state
-# 
+#
 
 
 # Let's just get one working
-# 
+#
 class numberGuess()
 
 
@@ -152,7 +152,9 @@ class Sim:
         # if keepEnv:
         #     pass### ugh
         self.environment = newEnv
-
+    def saveGenome(self):
+        with open("fancyTitle.txt", "w") as f:
+            f.writelines(self.initOrder[currentInitiative].seed())
 
 
 

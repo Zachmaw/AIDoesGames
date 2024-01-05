@@ -68,6 +68,7 @@ class Env:
         # Env should always have a value of 0 16 or 17, depending on sorting and the binary thing...
         # This speed value should be passed to addAgent along with the same Agents ID.
         #
+        #
         # I need to have a gene pool to reference with agentID
         # A gene pool can be:
         # A seperate folder for each Environments gene pool.
@@ -179,7 +180,7 @@ class TurnBased(DefaultGameObj):
         self.p1Went = False
         self.p2Went = False
 
-    def allWent(self):
+    def allWent(self):### if not any(list of bool representing players)
         ### make variable to number of players
         return self.p1Went and self.p2Went
 
