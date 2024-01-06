@@ -109,15 +109,15 @@ class Player:
 # As for location formatting... From two independent floats to a point on a 2D grid.
 ######
 class Agent:# Recieves rewards and observations, and returns an action
-    def __init__(self, outputCount:"int", generation:"int", memX:"int"=5, memY:"int"=5, geneSeq:'list[str]'=None) -> None:
+    def __init__(self, outputCount:"int"=1, generation:"int"=1, memX:"int"=5, memY:"int"=5, geneSeq:'list[str]'=None, rads:"float"=0.01):
         self.memory = list()
         for y in memY:
             self.memory.append(str())## alternatively .append("")
             for x in memX:
                 self.memory[y] += "0"
         if geneSeq:### Build a NN from a Genome to handle the object.
-            self.nn = NeuralNetwork(outputCount, generation, geneSeq)
-            pass
+            self.nn = NeuralNetwork(outputCount, generation, geneSeq, rads)
+            
         else:### No genome given, Check if any humans are waiting to play
             if not len(waitingPlayers):# if no players waiting, proceed
                 pass
@@ -140,7 +140,7 @@ for (dirpath, dirnames, filenames) in os.walk(os.path.join(os.path.realpath(__fi
         if not f == "base.py":
             EnvList[str(f)[:-3]] = ### HOW??? Gotta assign the specific class names...
     break
-# Does each Env NEED to be a class?
+# Does each Env NEED to be a class? # I think so, yeah...
 # all Environments inherit from the base Env class because they all need to
 # remember their own internal state
 # uhh, no. That's *why* they're a class, not why they inherit from one.
@@ -154,53 +154,67 @@ for (dirpath, dirnames, filenames) in os.walk(os.path.join(os.path.realpath(__fi
 
 currentEnv = EnvList[str(input())]
 
+def saveGenome(genes, genomeID, envStr):
+    with open(os.path.join(os.path.realpath(__file__), f"networks\\{envStr}\\NN{genomeID}.txt", "w")) as f:
+        f.writelines(genes)# Sim.initOrder[currentInitiative].seed()
+def loadGenome(genomeID, envStr):
+    temp = list()
+    with open(os.path.join(os.path.realpath(__file__), f"networks\\{envStr}\\NN{genomeID}.txt"), "r") as f:
+        for line in f.readlines():
+            temp.append(line.strip())
+    return temp
+
 
 
 class Sim:
-    def __init__(self, game:'str') -> None:### game needs to be a string
+    def __init__(self, game:'str') -> None:### game needs to be a string?
         '''Initialize an environment for this simulation'''
-        self.environment = game(players)## set to a user defined class which imports from Env
-        self.envHistory = dict()### a place to store kept Environments by a name in str and list of settings?
+        self.environment = game()### set to a user defined class which imports from Env
+        self.playerCount = self.environment.getPlayerCount()#####
+        # self.envHistory = dict()## a place to store kept Environments by a name in str and list of settings?
+        self.players = dict()# container for all Agents in the Sim # FORMAT: speed:int = 
+        self.playersCount = int()
+        self.initiativeOrder = list()
+
     def advance(self, actions:'list[int]', envRules:'function'):
         '''Each Agent is always allowed one action per timestep.\n
         It is important to maintain the order of Agent actions.'''
         return envRules(actions)### make sure actions.len() can be varied between timesteps.(as long as len(actions) == len(agents))
-    def setEnvironment(self,newEnv,keepEnv:'bool'=False):
-        '''Set a new environment for this simulation
-        (Almost always incredibly deadly for Agent objects...)'''
-        # ### keepEnv
-        # if keepEnv:
-        #     pass### ugh
-        self.environment = newEnv
+    
 
-    def saveGenome(self):
-        with open("fancyTitle.txt", "w") as f:
-            f.writelines(self.initOrder[currentInitiative].seed())
-
-    def addAgent(self, agentID:"tuple(int)", speed:"int"):### why is that a tuple? how big is it suposed to be?
+    def addAgent(self, agentID:"tuple(int, int)", speed:"int"):### load agent from genome into player dict
         self.init_order.append(speed, str("LairAction"))
         # sorts by initiative roll
         self.init_order = sorted(self.init_order, key=itemgetter(1), reverse=True)
         #####
         # What I need to do is either put the AgentID in the initiative order list
         # or put the Agent itself in the list?
-        # well, when I build the NN from a saved txt file Genome, I have to store it in Sim memory as a list named initOrder.
-
+        # well, when I build the NN from a saved txt file Genome, I have to store it in memory.
         # Generate NN, store it in dict with key as f"NN{playerNumber}"
+        # So list it is...initOrder = list[tuple(speed, agentID)]
+        # players = dict{agentID:Agent}
+
+    # def addAgent(self, agentID:"tuple(int)", speed:"int"):### why is that a tuple? how big is it suposed to be?
+    #     self.init_order.append(speed, ))
+    #     # sorts by initiative roll
+    #     self.init_order = sorted(self.init_order, key=itemgetter(1), reverse=True)
+    #     #####
+    #     # What I need to do is either put the AgentID in the initiative order list
+    #     # or put the Agent itself in the list?
+    #     # well, when I build the NN from a saved txt file Genome, I have to store it in Sim memory as a list named initOrder.
+
+    #     # Generate NN, store it in dict with key as f"NN{playerNumber}"
 
 
 
 
 
         ### IMPLEMENT SPEED GENE
-        # NNs can clone, so technichally I don't HAVE to ever keep parents alive, right?
-        # If that's the case, I can delete the selected genome from the gene pool the moment I build it into a NN?
-        # When I build the NN, place it in initiative. but it needs a speed value...
-        # It's time to extend the genome again, I guess... This gives me four bits
-        # Let's put it at the beginning and trim it off before it get's to decodeBitstring()
         # Using these 16 permutations, I have 16 values for my initiative order...
+        # NNs can clone, so technichally I don't HAVE to ever keep parents alive, right?
         # Env should always have a value of 0 16 or 17, depending on sorting and the binary thing...
         # This speed value should be passed to addAgent along with the same Agents ID.
+        #
         #
         # I need to have a gene pool to reference with agentID
         # A gene pool can be:
@@ -210,10 +224,13 @@ class Sim:
         #
         # The next thing is the naming method for Genomes in storage.
         # The only Genomes in storage are the successful/best ones.
+        ### but how do they get selected? to be put there.
+
         #####
 
-        # with open("GenePools\\testPool\\")
-        #     avaliableGenePool =
+
+
+
 
 
 # class Simulation:
@@ -230,6 +247,14 @@ class Sim:
 
 
 
+
+    # def setEnvironment(self,newEnv,keepEnv:'bool'=False):
+    #     '''Set a new environment for this simulation
+    #     (Almost always incredibly deadly for Agent objects...)'''
+    #     # ### keepEnv
+    #     # if keepEnv:
+    #     #     pass### ugh
+    #     self.environment = newEnv
 
 
 
