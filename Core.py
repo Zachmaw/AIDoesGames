@@ -57,18 +57,31 @@ EnvList = {}
 
 for (dirpath, dirnames, filenames) in os.walk(os.path.join(os.path.realpath(__file__), "environments")):
     for f in filenames:### make sure we don't add Base to that dict
-        if not f == "Base.py":
-            EnvList[str(f)[:-3]] = ### HOW??? Gotta assign the specific class names...
+        if f[-3:] == ".py":
+            if not f == "Base.py":### comparing a string to a file object? That can't work...
+                EnvList[f[:-3]] = ### HOW??? Gotta assign the specific class names...
     break
 # Does each Env NEED to be a class?
-# all Environments inherit from the base Env class because they all need to
-# remember their own internal state
-#
+# all Environments inherit from the base Env class because... something.
+# they remember their own internal state as a list
+# but they need rules by which to update those states.
+# what if base Env starts the list, adding a few core nesseccities....
+    #
+
+
+        # gamestate will be filled with things like:
+        # day or night, yes
+        # player turn number, Sim can pass it into whatever's being passed to the Agent
+        # round/turn/day number, yes, if it's a round based game, it can be handled by the game.
+        # various point values, yes like...
+        # table score/the pot, ez
+        # all players total scores, list with length(all players)
+
 
 
 # Let's just get one working
 #
-class numberGuess()
+# class numberGuess()
 
 
 
@@ -117,7 +130,7 @@ class Agent:# Recieves rewards and observations, and returns an action
                 self.memory[y] += "0"
         if geneSeq:### Build a NN from a Genome to handle the object.
             self.nn = NeuralNetwork(outputCount, generation, geneSeq, rads)
-            
+
         else:### No genome given, Check if any humans are waiting to play
             if not len(waitingPlayers):# if no players waiting, proceed
                 pass
@@ -172,7 +185,7 @@ class Sim:
         self.environment = game()### set to a user defined class which imports from Env
         self.playerCount = self.environment.getPlayerCount()#####
         # self.envHistory = dict()## a place to store kept Environments by a name in str and list of settings?
-        self.players = dict()# container for all Agents in the Sim # FORMAT: speed:int = 
+        self.players = dict()# container for all Agents in the Sim # FORMAT: speed:int =
         self.playersCount = int()
         self.initiativeOrder = list()
 
@@ -180,7 +193,7 @@ class Sim:
         '''Each Agent is always allowed one action per timestep.\n
         It is important to maintain the order of Agent actions.'''
         return envRules(actions)### make sure actions.len() can be varied between timesteps.(as long as len(actions) == len(agents))
-    
+
 
     def addAgent(self, agentID:"tuple(int, int)", speed:"int"):### load agent from genome into player dict
         self.init_order.append(speed, str("LairAction"))

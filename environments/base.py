@@ -39,11 +39,11 @@ class Env:
     def __init__(self, id):# The id is given to us from the Simulation
         self.ready = False
         self.runid = id
-        ### What about the initiative tracker program I found? Can't that help? Here's what's left of it.
         self.init_order = list()
-        self.init_order.append((20, "LairAction"))
-
-    def advanceOneStep(self, actionVector:'list[int]', envRules:'function'):
+        self.init_order.append((50, "LairAction"))
+        self.roundOfResponses = list()# to be filled to player count once an EnvChild inherits it.
+        self.gamestate = dict()
+    def getResponse(self, actionVector:'list[int]', envRules:'function'):### old concept... class now, not func.
         '''
         should take in the action of the current agent and\n
         return a list of observations that can be made about the environment\n
@@ -64,13 +64,38 @@ class Env:
     def getPlayerCount(self):
         pass###
 
-class DefaultGameObj(Env):
+    def advance(self):
+        ### from whose turn it is in the game, update the internal game state based on actions taken
+        # everyone whose turn it is not still recieves game data
+        # but they also see it's not their turn.
+        # This function is called after all players have submitted their responses.
+        # somehow update the gameState from the response from player-whos-turn.
+        # and set new observations for... all? just actve player?
+        #
+        # Is it better to represent gamestate as a list of ints with variable length based on environment
+        # would a list of int work?? does it have to be dict?
+        # yeah, List is probably better. I can itterate over it.
+        # I have to convert it to a list of floats anyway for the Agents.
+        # I should find a way to just deliver the raw ints to Players.
+        # but dict is easier for me to understand? keywise. as opposed to indexwise.
+        ### so, from gamestate, get whose turn it is
+        move = self.roundOfResponses[self.gamestate["turnTracker"]]# Sim tracks whose turn it is.
+        ### problem here is: roundOfResponses is ordered in sync with initOrder which is not the same as player order.
+        if player == 0:
+            self.p1Went = True
+        else:
+            self.p2Went = True
+
+
+class DefaultGame(Env):
     def __init__(self, id, maxPlayers):### add the other atributes a game object would have( like??)
         super().__init__(id)
         self.playerLimit = maxPlayers# The player limit
-        self.players = {}# list of bool with length = maxPlayers
+        self.playersTookTurn = list()# list of bool with length = maxPlayers
+        self.gamestate["turnTracker"] = int()# This game is turn based. int represents index in initOrder.
+        # initOrder which has already been sorted so the highest speed has the lowest index. Descending order.
 
-    def awaitPlayerConnections(self):
+    def awaitPlayerConnections(self):### I don't think Env needs this.
         trying = True
         while trying:
             try:
@@ -88,26 +113,20 @@ class DefaultGameObj(Env):
         temp2 = input('')
         pass###
 
-    def get_player_choice(self, p):
+    def get_player_choice(self, p):### should be a function of Sim, not Env.
         """
         :param p: [0,1]
         :return: Move
         """
         return self.moves[p]
 
-    def play(self, player, move):
-        self.moves[player] = move
-        if player == 0:
-            self.p1Went = True
-        else:
-            self.p2Went = True
 
-    def connected(self):
+    def connected(self):### Again, Sim probably needs one of these, not Env.
         '''Check self.ready'''
         return self.ready
 
     def checkWinner(self):
-        # cycle through all players tracking which response is closest to the selected number
+        # cycle through all players answers, returning whose response is closest to the selected number without going over.
         # maybe track responses in a list, sort and return the top result
         p1 = self.moves[0].upper()[0]
         p2 = self.moves[1].upper()[0]
@@ -128,7 +147,7 @@ class DefaultGameObj(Env):
         return winner
 
 
-class TurnBased(DefaultGameObj):
+class TurnBased(DefaultGame):
     def __init__(self, id):
         super().__init__(id)
         self.tookTurn = {}
