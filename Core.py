@@ -85,6 +85,25 @@ for (dirpath, dirnames, filenames) in os.walk(os.path.join(os.path.realpath(__fi
 
 
 
+
+
+def uniquify(path):
+    filename, extension = os.path.splitext(path)
+    counter = 0
+    while os.path.exists(path):
+        path = filename + " (" + str(counter) + ")" + extension
+        counter += 1
+    return (path, counter)
+
+
+
+
+
+
+
+
+
+
 currentEnv = EnvList[str(input())]
 
 
@@ -167,16 +186,26 @@ for (dirpath, dirnames, filenames) in os.walk(os.path.join(os.path.realpath(__fi
 
 currentEnv = EnvList[str(input())]
 
-def saveGenome(genes, genomeID, envStr):
+def saveGenome(genes, genomeID:"tuple(int, int)", envStr:"str"):
     with open(os.path.join(os.path.realpath(__file__), f"networks\\{envStr}\\NN{genomeID}.txt", "w")) as f:
         f.writelines(genes)# Sim.initOrder[currentInitiative].seed()
-def loadGenome(genomeID, envStr):
-    temp = list()
+def loadGenome(genomeID:"tuple(int, int)", envStr:"str"):
+    '''returns a list of hexdecimal strings\n
+    but the first one is made of the first character from all of 'em cut off and stuck together\n
+    (in order, of course).'''
+    speed = list()
+    genome = list()
     with open(os.path.join(os.path.realpath(__file__), f"networks\\{envStr}\\NN{genomeID}.txt"), "r") as f:
         for line in f.readlines():
-            temp.append(line.strip())
-    return temp
+            line2 = line.strip()
+            speed.append(line2[0])
+            genome.append(line2[1:])
+    genome.insert(0, speed)
+    return genome
 
+def decodeSpeed(speedGene:"str"):##### what happens if the genome is empty? The speed gene is empty. This needs to be resolved because speed gets decoded before the NN is init'd.
+
+    pass
 
 
 class Sim:
@@ -188,15 +217,15 @@ class Sim:
         self.players = dict()# container for all Agents in the Sim # FORMAT: speed:int =
         self.playersCount = int()
         self.initiativeOrder = list()
-
-    def advance(self, actions:'list[int]', envRules:'function'):
-        '''Each Agent is always allowed one action per timestep.\n
-        It is important to maintain the order of Agent actions.'''
-        return envRules(actions)### make sure actions.len() can be varied between timesteps.(as long as len(actions) == len(agents))
+        self.init_order.append(50, "LairAction")
 
 
-    def addAgent(self, agentID:"tuple(int, int)", speed:"int"):### load agent from genome into player dict
-        self.init_order.append(speed, str("LairAction"))
+    def addAgent(self, agentID:"tuple(int, int)", environmentString:"str"):### load agent from genome into player dict, giving it a temporary 'system ID'. If it gets selected for reproduction, it will recieve a new ID and be saved.
+        genome = loadGenome(agentID, environmentString)
+        
+        
+        
+        self.init_order.append(speed, )### f"NN{agentID[0]}-{agentID[1]}"
         # sorts by initiative roll
         self.init_order = sorted(self.init_order, key=itemgetter(1), reverse=True)
         #####
@@ -207,8 +236,8 @@ class Sim:
         # So list it is...initOrder = list[tuple(speed, agentID)]
         # players = dict{agentID:Agent}
 
-    # def addAgent(self, agentID:"tuple(int)", speed:"int"):### why is that a tuple? how big is it suposed to be?
-    #     self.init_order.append(speed, ))
+    # def addAgent(self, agentID:"int", speed:"int"):### why is that a tuple? how big is it suposed to be?
+    #     self.init_order.append(speed, agentID))
     #     # sorts by initiative roll
     #     self.init_order = sorted(self.init_order, key=itemgetter(1), reverse=True)
     #     #####
@@ -240,6 +269,11 @@ class Sim:
         ### but how do they get selected? to be put there.
 
         #####
+
+    def advance(self, actions:'list[int]', envRules:'function'):
+        '''Each Agent is always allowed one action per timestep.\n
+        It is important to maintain the order of Agent actions.'''
+        return envRules(actions)### make sure actions.len() can be varied between timesteps.(as long as len(actions) == len(agents))
 
 
 

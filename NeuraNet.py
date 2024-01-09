@@ -2,36 +2,22 @@
 # IMPORTS
 from numpy import random, exp, exp2, tanh, heaviside, array#, dot, transpose
 from math import ceil
-import os.path
-
 # import timeit
+
 # CONSTANT INIT
 HEX_OPTIONS = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"]
 Biases = list()
 for i in range(16):# could only get -8 to +7, but that's fine because a bias of +8 means that neuron fires(with max power) no matter what.
-    Biases.append(int(i - 8))
+    Biases.append(i - 8)
 # SETTINGS INIT
 # FUNCTIONS
-def uniquify(path):
-    filename, extension = os.path.splitext(path)
-    counter = 0
-    while os.path.exists(path):
-        path = filename + " (" + str(counter) + ")" + extension
-        counter += 1
-    return (path, counter)
-
 def mult(weightValue:'float', input:"float"):
     '''return float'''
     return input * weightValue
-
 def binToHex(binaryString):
     return hex(int(binaryString, 2))
-
 def hextobin(hexaString):
   return bin(int(hexaString, 16))[2:].zfill(len(hexaString) * 4)
-
-def replace_str_index(text, index=0, replacement=''):
-    return f'{text[:index]}{replacement}{text[index+1:]}'
 
 def roll(d, dc, bonus):
     r = random.randint(1, d+1)
@@ -49,14 +35,15 @@ def randomOneGene():
     for i in range(9):
         gene.append(random.choice(HEX_OPTIONS))
     return "".join(gene)
-
 def init_random_Genome(geneCount:"int"):
     genome = list()
     for i in range(geneCount):
         genome.append(randomOneGene())
     return genome# a list of hexdec strings( each with len(9))
 
-def generateMutationBitstring(geneLen:"int", toxicWasteBonus:"float"=0.0):
+def replace_str_index(text, index=0, replacement=''):
+    return f'{text[:index]}{replacement}{text[index+1:]}'
+def generateMutationBitstring(geneLen:"int", toxicWasteBonus:"float"=0.01):
     '''Default odds: 8/1000\nA float of 1.0 should cause mutation chance to be 999/1000\n Nat 1 is still a possibility.'''
     temp = list()
     for i in range(geneLen):
@@ -65,16 +52,13 @@ def generateMutationBitstring(geneLen:"int", toxicWasteBonus:"float"=0.0):
         else:
             temp.append("0")
     return "".join(temp)
-
-def bitCombine(argA:"str", argB:"str"):
+def bitCombine(argA:"str", argB:"str"):# overlay mutation bitstring with gene bitstring
     temp = list()
     for argi in range(len(argA)):
         temp.append(str((int(argA[argi]) + int(argB[argi])) % 2))
     return "".join(temp)
-
 def mutateBitstring(bitstring:"str"):
     return bitCombine(bitstring, generateMutationBitstring(36))
-
 def mutateHexdec(gene:"str", radiationBonus:"float"):
     '''raises/lowers the value of random bonds by one'''
     for i in range(len(gene)):
@@ -348,9 +332,9 @@ if __name__ == "__main__":
 # currentEnvOuts is being kept up to date between Agents, isn't it...
 
 
-# When it comes to the Genetic Algorythm, the Sim can handle it.
 # since each genome in the pool is just the successors of the previous generation, as opposed to untested whelplings,
-# When building a NN I can create the input genome to that be based on as many parent genomes as I want...
-# (again with or without mutation based on waste)
+# When building a NN I can make the input genome to that be based on as many parent genomes as I want...
+# (again with or without mutation based on waste/radiation)
+
 # Each gene should come with a bias for each internalNeuron whether that is the gene that initialised the neuron or not.
 # a genome doen't know how many internal Neurons it has until it is built into a brain
