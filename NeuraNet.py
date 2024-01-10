@@ -338,3 +338,12 @@ if __name__ == "__main__":
 
 # Each gene should come with a bias for each internalNeuron whether that is the gene that initialised the neuron or not.
 # a genome doen't know how many internal Neurons it has until it is built into a brain
+
+# Each gene also comes with an initiative gene which is one character long right at the beginning.
+# this gene, which has a range of 16, either raises or lowers the overall speed of the Agent.
+# assuming for 1 gene, min=0, max=15. Meaning each additional gene adds 0-15 speed to the genome.
+# A genome with 10 genes is gonna have a min=0 and max=150.
+# 50 genes min=0 max=750...
+# No matter how many genes, just averaging the speed genes returns that 0-15 range.
+# but keep the total as a tiebreaker value for initOrder
+    

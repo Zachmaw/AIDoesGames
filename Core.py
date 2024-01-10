@@ -156,9 +156,9 @@ class Agent:# Recieves rewards and observations, and returns an action
             pass### Make the object recieve input from input devices( wait on the User)
             # THIS Agent is a Player
 
-    def rollInitiative(self):
-        # self.initiative =
-        pass
+    # def rollInitiative(self):
+    #     # self.initiative =
+    #     pass
 
 
 
@@ -214,20 +214,21 @@ class Sim:
         self.environment = game()### set to a user defined class which imports from Env
         self.playerCount = self.environment.getPlayerCount()#####
         # self.envHistory = dict()## a place to store kept Environments by a name in str and list of settings?
-        self.players = dict()# container for all Agents in the Sim # FORMAT: speed:int =
+        self.agents = dict()# container for all Agents in the Sim # FORMAT: speed:int =
         self.playersCount = int()
         self.initiativeOrder = list()
-        self.init_order.append(50, "LairAction")
+
+        # self.initiativeOrder.append(50, "LairAction")
 
 
     def addAgent(self, agentID:"tuple(int, int)", environmentString:"str"):### load agent from genome into player dict, giving it a temporary 'system ID'. If it gets selected for reproduction, it will recieve a new ID and be saved.
         genome = loadGenome(agentID, environmentString)
+        self.agents[f"NN{self.agents.__len__()+1}"] = Agent(self.environment.actionOptions)#####sleeepy
         
         
-        
-        self.init_order.append(speed, )### f"NN{agentID[0]}-{agentID[1]}"
+        self.initiativeOrder.append(speed, )### f"NN{agentID[0]}-{agentID[1]}"
         # sorts by initiative roll
-        self.init_order = sorted(self.init_order, key=itemgetter(1), reverse=True)
+        self.initiativeOrder = sorted(self.initiativeOrder, key=itemgetter(1), reverse=True)
         #####
         # What I need to do is either put the AgentID in the initiative order list
         # or put the Agent itself in the list?
