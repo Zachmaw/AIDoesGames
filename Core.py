@@ -125,7 +125,9 @@ class Player:
         waitingPlayers.append(self.ID)
 
 
-
+# ____________________________________________________________________________________________________
+#     PASTEBIN
+# ----------------
 
 ######
 # self.brain = NeuralNetwork(expectedOutputs:'int', genes:'list[str]', irradiation:"float"=0.01):
@@ -303,8 +305,7 @@ class Sim:
     #     # if keepEnv:
     #     #     pass### ugh
     #     self.environment = newEnv
-
-
+# ______________________________________________________________________________________
 
 # MAIN BLOCK
 if __name__ == "__main__":
