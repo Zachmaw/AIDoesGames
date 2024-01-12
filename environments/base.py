@@ -1,30 +1,7 @@
-# import pygame
-
-
-
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-from operator import itemgetter
-import random
-
-# ------ DREWCIFER'S HANDY DANDY PYTHON INITIATIVE CALCULATOR FOR D&D -------
-# Designed so you enter in your PCs' names once at the start of each session.
-# Those names are re-used for each subsequent fight. Monsters are numbered
-# simply, this should be tracked by the DM (put numbered tokens next to each
-# monster or something to make this easy). At the end of each fight, hit enter
-# to start over or 'n' to quit. If you need to add a new PC or make a mistake
-# or something, just quit the program (CTRL + C) and run the script again to
-# start over.
-
-
-
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
 
 
 # so the Sim class calls one of the Game classes( which all inherit from the Env class.), but the advanceTime function is called where exactly??

@@ -1,4 +1,4 @@
-# geneHexstring = "1234567890deadbeef"
+# geneHexstring = "c0ffee"
 # geneBitstring = [int(digit, 16) for digit in geneHexstring]
 # # digitindex = 2
 # # bitindex = 3
