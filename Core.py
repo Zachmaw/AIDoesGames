@@ -20,7 +20,7 @@
     # select an environment
         # Environments vary in max Agents per run
     # load/generate a population of NN with feature limits imposed by the selected Env
-        # If generating, the number of genes per genome should be balanced with the number of attempts, think log7?
+        # If generating, the number of genes per genome should be balanced with the number of attempts, think y=0.75x .
     # Enter a loop:
         # whiteboard
         # Agents all are given the input vector
@@ -226,8 +226,8 @@ class Sim:
     def addAgent(self, agentID:"tuple(int, int)", environmentString:"str"):### load agent from genome into player dict, giving it a temporary 'system ID'. If it gets selected for reproduction, it will recieve a new ID and be saved.
         genome = loadGenome(agentID, environmentString)
         self.agents[f"NN{self.agents.__len__()+1}"] = Agent(self.environment.actionOptions)#####sleeepy
-        
-        
+
+
         self.initiativeOrder.append(speed, )### f"NN{agentID[0]}-{agentID[1]}"
         # sorts by initiative roll
         self.initiativeOrder = sorted(self.initiativeOrder, key=itemgetter(1), reverse=True)
