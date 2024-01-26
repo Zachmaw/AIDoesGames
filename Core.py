@@ -38,7 +38,7 @@ from sys import exit
 import random
 from NeuraNet import NeuralNetwork
 from environments.base import *
-
+from operator import itemgetter
 
 
 

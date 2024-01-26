@@ -80,7 +80,7 @@ class NeuralNetwork():
     def __init__(self, outputCount:'int'=1, generation:"int"=1, genes:'list[str]'=None, irradiation:"float"=0.01):
         ### self.costToExist = (int(), float())# cost to exist per turn
         if genes == None:# make some genes based on generation
-            genes = init_random_Genome(ceil(generation/10))## might lower this number, likely no further than 7.
+            genes = init_random_Genome(ceil(generation * 0.75))# f(x)=0.75x
         self.outputNodes = list()# Shape: list(tuple(list[float(results from weight multiplications)], float(node bias)). key : list[bias,inputs]
         self.internalNeurons = dict()# internal neuron is tuple and contains workingInputs(list[float(-4,4)]), bias(int(-4,3)), and output(float(-1,1)). key : dict{ID:tuple(list[bias,inputs], state)}.
         self.layersSynapse = list()# Full decoded Connections, stacked in layers.# Shape: list[list[tuple(int, int, int, int, float)]]
@@ -94,8 +94,12 @@ class NeuralNetwork():
         currentLayerInputIDs = list()
         genome = list# for every gene, make it a bitstring, mutate it, then disect it, turn it back into hexString, and store it in genome.
         for i in range(len(genes)):# run through all the genes in the genome# Decode all the connections into tuples.# for synapse(index) in the_genome:
-            bitstring = mutateBitstring(hextobin(mutateHexdec(genes[i], irradiation)))# MUTATION * 2 COMBO | By way of irradiation and for growing NNs.
-            genome.append(binToHex(bitstring))
+            temp = mutateHexdec(genes[i], irradiation)# MUTATION * 2 COMBO | By way of irradiation and for growing NNs.
+            ### Right before the Hex string translates to binary, grab the speed.
+            # that means speed gene is never binary, and never recieves binary mutation chance... OH WELL!
+            # oh no, we're already looping through the genes... hmmm.
+            bitstring = mutateBitstring(hextobin(temp))
+            genome.append(binToHex(bitstring))## (Note to self: Calm down, that's why this is on it's own line..)
             decodedSynapse = (# disect it
                 int(bitstring[0]),# 0 is inputInput, 1 is internal input. 1 bit
                 int(bitstring[1:8], 2),# Specify which node by its ID in that group. 7 bits
@@ -251,7 +255,7 @@ if __name__ == "__main__":
                 # Save it's genome
             # kill the genome
             # for larger games, all we need do is extend the definition of "question".
-            #
+            # and again still for round based games
 
 
 
@@ -340,10 +344,5 @@ if __name__ == "__main__":
 # a genome doen't know how many internal Neurons it has until it is built into a brain
 
 # Each gene also comes with an initiative gene which is one character long right at the beginning.
-# this gene, which has a range of 16, either raises or lowers the overall speed of the Agent.
-# assuming for 1 gene, min=0, max=15. Meaning each additional gene adds 0-15 speed to the genome.
-# A genome with 10 genes is gonna have a min=0 and max=150.
-# 50 genes min=0 max=750...
-# No matter how many genes, just averaging the speed genes returns that 0-15 range.
-# but keep the total as a tiebreaker value for initOrder
-    
+# this bit, which has a range of 16, either raises or lowers, per gene, the overall speed of the Agent.
+# Then the number of genes determines a small positive or negative bonus which is then also applied.
