@@ -13,7 +13,7 @@
 # because like the Agent and the Environment are seperate...# duh
 # So I mean, We run Core.py
 # Sim says, "Okay, Human. Which Environment will we be running Agents in, today?"
-# Sim loads the specified environment. currentEnv =
+# Sim loads the specified environment. currentEnv = class
 
 
 # we need to:
@@ -34,38 +34,92 @@
 
 
 import pygame, os
-from sys import exit
-import random
+# from sys import exit
+# import random
 from NeuraNet import NeuralNetwork
-from environments.base import *
+from environments.Base import *
 from operator import itemgetter
 
 
+from environments.Dice import Pig
 
 
 
 
-def pickEnv(name):
-    klass = EnvList(name)
-    return klass()
 
 
 
-EnvList = {}
+
+
+
+
+
+
+EnvList = {##EnvList[f[:-3]]
+    'pig': Pig,
+    'dice': Pig
+}
 # name_to_class = dict(some=SomeClass,
 #                      other=OtherClass)
 
-for (dirpath, dirnames, filenames) in os.walk(os.path.join(os.path.realpath(__file__), "environments")):
-    for f in filenames:### make sure we don't add Base to that dict
-        if f[-3:] == ".py":
-            if not f == "Base.py":### comparing a string to a file object? That can't work...
-                EnvList[f[:-3]] = ### HOW??? Gotta assign the specific class names...
-    break
+def pickEnv(name):
+    klass = EnvList(name)
+    return klass()##### So, we're returning a called instance of whatever Environment we've chosen,
+                        # but always without any arguments.
+
+validEnvNames = EnvList.keys()
+# for (dirpath, dirnames, filenames) in os.walk(os.path.join(os.path.realpath(__file__), "environments")):
+#     for f in filenames:
+#         if f[-3:] == ".py":# Check the extention
+#             if not f == "Base.py":# make sure we don't add Base to that dict
+#                 validEnvNames.append(f[:-3])### hard code in all the avaliable Environments
+#                 # this chunk can add the names to a list so users can only select a valid target from that list.
+#     break       # or dict, whatever.
+
+
+
+
+# env = pickEnv()
+
+# currentEnv = EnvList[str(input())]
+
+
+
+### a lot of this should be writen outside the environment... Only pass in decoded actions from the users?
+                                                    # yeah, make the Sim dumb it down for NN Agents. Better than making it smart up for users...
+        ### define NN then come back# lol this was before NN was defined?
+        # self.currentMove = inputs[self.turn]# find out who's turn it is and extract active player action
+        # for player in inputs:
+        #     result = self.decodeActs(player)
+        #     if result == 1:
+        #         tempN = self.roll(self.DICE[floor(self.round * 0.5)])#every even round use the next dice up
+        #         if tempN == 0:
+        #             self.turn += 1### Im not sure that's all I had to do here...
+        #         else:# didn't roll 0
+        #             self.tempScore += tempN
+        #     else:
+        #         self.players[self.turn] += self.tempScore
+        #         self.turn += 1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Does each Env NEED to be a class?
 # all Environments inherit from the base Env class because... something.
-# they remember their own internal state as a list
+# they remember their own internal state
 # but they need rules by which to update those states.
-# what if base Env starts the list, adding a few core nesseccities....
     #
 
 
@@ -104,7 +158,6 @@ def uniquify(path):
 
 
 
-currentEnv = EnvList[str(input())]
 
 
 
@@ -213,7 +266,7 @@ def decodeSpeed(speedGene:"str"):##### what happens if the genome is empty? The 
 class Sim:
     def __init__(self, game:'str') -> None:### game needs to be a string?
         '''Initialize an environment for this simulation'''
-        self.environment = game()### set to a user defined class which imports from Env
+        self.environment = pickEnv(game)### set to a user defined class which imports from Env
         self.playerCount = self.environment.getPlayerCount()#####
         # self.envHistory = dict()## a place to store kept Environments by a name in str and list of settings?
         self.agents = dict()# container for all Agents in the Sim # FORMAT: speed:int =

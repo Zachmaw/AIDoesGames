@@ -1,5 +1,4 @@
-from ..Core import Agent
-from base import Env
+from Base import Env
 from math import floor
 
 """
@@ -13,35 +12,65 @@ from random import randint
 
 class Pig(Env):
     """
-    Classic Pig with a penalty rule.
+    Pig with a twist and some penalty rules.
     """
+    # needs to be entirely self contained, means it is 'unpowered'.
+    # I ask it a question, giving it some power in the proccess.
+    # and it returns a response. The Observations the NEXT Agent in order sees.
+    #
+    #
+    #
     def __init__(self):
-        self.MAX_PLAYERS = 7
-        self.DICE = [2,4,6,8,10,12,20]
-        self.ready = False
-        self.players = list()# of int representing that player's score
-        self.turn = int()
-        self.round = int()
-        self.currentMove = None# a tuple of float, len 2
-        self.tempScore = int()
-        self.penalty = int()
-        self.leadScore = int()
-    def addPlayer(self, player:'Agent'):
-        self.players.append(player)
-    def ruleset(self, inputs:'list[tuple(float)]'):### a lot of this should be writen outside the environment... Only pass in decoded actions from the users?
-        self.currentMove = inputs[self.turn]# find out who's turn it is and extract active player action
-        ### define NN then come back
-        for player in inputs:
-            result = self.decodeActs(player)
-            if result == 1:
-                tempN = self.roll(self.DICE[floor(self.round/2)])#every even round use the next dice
-                if tempN == 0:
-                    self.turn += 1### Im not sure that's all I had to do here...
-                else:# didn't roll 0
-                    self.tempScore += tempN
+        self.PlayerCount = 7
+        self.roundMultiplier = 2
+        self.DICE = [2,4,6,8,10,12,20]# also represents max round count
+        self.players = list()# of int representing that index's player's score
+        self.turn = int()# who's turn is it rn?
+        self.roundNum = int()# What round are we on?
+        self.tempScore = int()# the pot
+        self.leadScore = int()# the highScore
+        self.possibleActions = [
+            self.idle,
+            self.greed,
+            self.secure
+        ]
+        uiData = {
+            'possibleActions': 'Greed or Chill'### how can a user idle?
+        }
+    def idle(self, who:'int', penaltyMultiplier:'int'):# no selection was offered
+        if who == self.turn:# penalized for idling on your turn, otherwise nothing happens
+            self.players[who] -= 1 * penaltyMultiplier
+    def greed(self, who:'int', penaltyMultiplier:'int'):# first output node gave positive
+        if not who == self.turn:
+            self.players[who] -= 2 * penaltyMultiplier
+        else:
+            if not self.roundNum:
+                diceNum = 0
             else:
-                self.players[self.turn] += self.tempScore
-                self.turn += 1
+                diceNum = floor(self.roundNum / self.roundMultiplier)
+            rolled = self.roll(self.DICE[diceNum])#every even round use the next dice up
+            if rolled == 0:
+                self.nextTurn()### Im not sure that's all I had to do here...
+            else:# didn't roll 0
+                self.tempScore += rolled
+            pass###
+    def secure(self, who:'int', penaltyMultiplier:'int'):# second input from vector was True instead
+        if not who == self.turn:
+            self.players[who] -= 2 * penaltyMultiplier
+        else:
+            self.players[who] += self.tempScore
+            self.nextTurn()
+
+    def nextTurn(self):
+        self.turn += 1
+        self.turn = self.turn % self.PlayerCount
+        self.tempScore = 0
+    def addPlayer(self):# Not Agent. Let Sim handle that shturf.
+        self.players.append(int())
+        pass### anything else? i really am not so sure there is.
+    def ruleset(self, inputV:'int', playerNum, penaltyMultiplier:'int'=1):### this func could probably ascend to the parent class.
+        # I need to determine which action was taken by which player and react accordinly.
+        self.possibleActions[inputV](playerNum, penaltyMultiplier)
 
 
 
@@ -51,14 +80,14 @@ class Pig(Env):
         # based on the move [roll/hold/idle]
         # return observations (for Agent: list[oservations])
         # this game has the observations[turnCount:int, roundCount:int, grandScore:int, tempScore:int, leadScore:int, penalty:int]
-        # 
+        #
         ##### what format am I returning exactly? same observations to all? yeah. no.
         # everyone only sees their own score and the highest one, not all of them.
         # which means everyone gets a personalized observation? yeah....
         observations = list()### Rename
         self.leadScore = sorted(self.players, reverse=True)
         for p in self.players:# for player in self.players:### really think about it...
-            observations.append([self.turn, self.round, p, self.tempScore, self.leadScore, self.penalty])
+            observations.append([self.turn, self.roundNum, p, self.tempScore, self.leadScore, self.penalty])
             ### consider returning the general data and then the personal data
         ### was that really it, here?
         self.tempScore = 0# reset score for the next turn or roll

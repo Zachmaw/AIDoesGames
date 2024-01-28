@@ -13,13 +13,17 @@
 # Then, from envRules, we know the expected NN outputs and player count and can populate the Sim with the NN/Agents and their speed.
 # Sim
 class Env:
+    '''
+    All inheritors must declare the following:
+    PlayerCount
+    '''
     def __init__(self, id):# The id is given to us from the Simulation
         self.ready = False
         self.runid = id
         self.init_order = list()
-        self.init_order.append((50, "LairAction"))
-        self.roundOfResponses = list()# to be filled to player count once an EnvChild inherits it.
-        self.gamestate = dict()
+        # self.init_order.append((50, "LairAction"))
+        self.thisRoundResponses = list()# to be filled to player count once an EnvChild inherits it.
+        # self.gamestate = dict()
     def getResponse(self, actionVector:'list[int]', envRules:'function'):### old concept... class now, not func.
         '''
         should take in the action of the current agent and\n
@@ -56,7 +60,7 @@ class Env:
         # I should find a way to just deliver the raw ints to Players.
         # but dict is easier for me to understand? keywise. as opposed to indexwise.
         ### so, from gamestate, get whose turn it is
-        move = self.roundOfResponses[self.gamestate["turnTracker"]]# Sim tracks whose turn it is.
+        move = self.thisRoundResponses[self.gamestate["turnTracker"]]# Sim tracks whose turn it is.
         ### problem here is: roundOfResponses is ordered in sync with initOrder which is not the same as player order.
         if player == 0:
             self.p1Went = True
