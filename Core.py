@@ -37,7 +37,7 @@ import pygame, os
 # from sys import exit
 # import random
 from NeuraNet import NeuralNetwork
-from environments.Base import *
+from environments.base import *
 from operator import itemgetter
 
 
@@ -45,13 +45,94 @@ from environments.Dice import Pig
 
 
 
+def uniquify(path):
+    filename, extension = os.path.splitext(path)
+    counter = 0
+    while os.path.exists(path):
+        path = filename + " (" + str(counter) + ")" + extension
+        counter += 1
+    return (path, counter)
+
+
+
+
+def saveGenome(genes, genomeID:"tuple(int, int)", envStr:"str"):
+    with open(os.path.join(os.path.realpath(__file__), f"networks\\{envStr}\\NN{genomeID}.txt", "w")) as f:
+        f.writelines(genes)# Sim.initOrder[currentInitiative].seed()
+def loadGenome(genomeID:"tuple(int, int)", envStr:"str"):
+    '''returns a list of hexdecimal strings\n
+    but the first one is made of the first character from all of 'em cut off and stuck together\n
+    (in order, of course).'''
+    speed = list()
+    genome = list()
+    with open(os.path.join(os.path.realpath(__file__), f"networks\\{envStr}\\NN{genomeID}.txt"), "r") as f:
+        for line in f.readlines():
+            line2 = line.strip()
+            speed.append(line2[0])
+            genome.append(line2[1:])
+    genome.insert(0, speed)
+    return genome
+
+def decodeSpeed(speedGene:"str"):##### what happens if the genome is empty? The speed gene is empty. This needs to be resolved because speed gets decoded before the NN is init'd.
+
+    pass
+
+
+
+def geneCountMath(x:"int"):
+    '''return a float in the range(0, 0.89)'''
+    if x <= 15:# linear(0,0)(15,0.8)
+        return 0.055 * x
+    elif x > 123:
+        return 0.1
+    else:
+        return -0.0065 * x + 1
+ 
+def fetchBonus(funcOut:"float"):
+    '''input range (0, 0.999)'''
+    t = funcOut * 5
+    if t < 1:
+        return -2
+    elif t < 2:
+        return -1
+    elif t < 3:
+        return 0
+    elif t < 4:
+        return 1
+    else:
+        return 2
+ 
+
+
+
+
+ 
+### new mutation algorythm
+# all mutating should occur within NN
+
+ 
+ 
 
 
 
 
 
 
-
+### a lot of this should be writen outside the environment... Only pass in decoded actions from the users?
+                                                    # yeah, make the Sim dumb it down for NN Agents. Better than making it smart up for users...
+        ### define NN then come back# lol this was before NN was defined?
+        # self.currentMove = inputs[self.turn]# find out who's turn it is and extract active player action
+        # for player in inputs:
+        #     result = self.decodeActs(player)
+        #     if result == 1:
+        #         tempN = self.roll(self.DICE[floor(self.round * 0.5)])#every even round use the next dice up
+        #         if tempN == 0:
+        #             self.turn += 1### Im not sure that's all I had to do here...
+        #         else:# didn't roll 0
+        #             self.tempScore += tempN
+        #     else:
+        #         self.players[self.turn] += self.tempScore
+        #         self.turn += 1
 
 
 
@@ -76,42 +157,26 @@ validEnvNames = EnvList.keys()
 #                 # this chunk can add the names to a list so users can only select a valid target from that list.
 #     break       # or dict, whatever.
 
-
-
-
 # env = pickEnv()
-
 # currentEnv = EnvList[str(input())]
 
+EnvList = {}
+# name_to_class = dict(some=SomeClass,
+#                      other=OtherClass)
+
+for (dirpath, dirnames, filenames) in os.walk(os.path.join(os.path.realpath(__file__), "environments")):
+    for f in filenames:### make sure we don't add Base to that dict
+        if not f == "base.py":
+            pass# this was for something else entirely...# EnvList[str(f)[:-3]] = ### HOW??? Gotta assign the specific class names...
+    break
 
 
-### a lot of this should be writen outside the environment... Only pass in decoded actions from the users?
-                                                    # yeah, make the Sim dumb it down for NN Agents. Better than making it smart up for users...
-        ### define NN then come back# lol this was before NN was defined?
-        # self.currentMove = inputs[self.turn]# find out who's turn it is and extract active player action
-        # for player in inputs:
-        #     result = self.decodeActs(player)
-        #     if result == 1:
-        #         tempN = self.roll(self.DICE[floor(self.round * 0.5)])#every even round use the next dice up
-        #         if tempN == 0:
-        #             self.turn += 1### Im not sure that's all I had to do here...
-        #         else:# didn't roll 0
-        #             self.tempScore += tempN
-        #     else:
-        #         self.players[self.turn] += self.tempScore
-        #         self.turn += 1
+# all Environments inherit from the base Env class because they all need to
+# remember their own internal state
 
 
 
-
-
-
-
-
-
-
-
-
+currentEnv = EnvList[str(input())]
 
 
 
@@ -141,13 +206,6 @@ validEnvNames = EnvList.keys()
 
 
 
-def uniquify(path):
-    filename, extension = os.path.splitext(path)
-    counter = 0
-    while os.path.exists(path):
-        path = filename + " (" + str(counter) + ")" + extension
-        counter += 1
-    return (path, counter)
 
 
 
@@ -156,12 +214,7 @@ def uniquify(path):
 
 
 
-
-
-
-
-
-waitingPlayers = list()
+waitingPlayers = list()# le HUH?
 
 
 
@@ -178,13 +231,10 @@ class Player:
         waitingPlayers.append(self.ID)
 
 
-# ____________________________________________________________________________________________________
-#     PASTEBIN
-# ----------------
 
 ######
 # self.brain = NeuralNetwork(expectedOutputs:'int', genes:'list[str]', irradiation:"float"=0.01):
-# agent.brain.seed()
+# saveGenome(agent.brain.seed())
 ### Gets called by the Sim when the Network has been selected to aid in repopulation.
 
 
@@ -196,20 +246,22 @@ class Player:
 # As for location formatting... From two independent floats to a point on a 2D grid.
 ######
 class Agent:# Recieves rewards and observations, and returns an action
-    def __init__(self, outputCount:"int"=1, generation:"int"=1, memX:"int"=5, memY:"int"=5, geneSeq:'list[str]'=None, rads:"float"=0.01):
+    def __init__(self, outputCount:"int"=1, generation:"int"=1, memory:"tuple(int, int)"=None, geneSeq:'list[str]'=None, rads:"float"=0.01):
         self.memory = list()
-        for y in memY:
+        for y in memory[0]:
             self.memory.append(str())## alternatively .append("")
-            for x in memX:
+            for x in memory[1]:
                 self.memory[y] += "0"
         if geneSeq:### Build a NN from a Genome to handle the object.
             self.nn = NeuralNetwork(outputCount, generation, geneSeq, rads)
 
         else:### No genome given, Check if any humans are waiting to play
             if not len(waitingPlayers):# if no players waiting, proceed
+                ### say there were no users queued up, nor was a genome supplied,
+                # Therefore an empty NN is being generated.
                 pass
             pass### Make the object recieve input from input devices( wait on the User)
-            # THIS Agent is a Player
+            # *This* Agent is a Player instead of a NN
 
     # def rollInitiative(self):
     #     # self.initiative =
@@ -218,50 +270,6 @@ class Agent:# Recieves rewards and observations, and returns an action
 
 
 
-EnvList = {}
-# name_to_class = dict(some=SomeClass,
-#                      other=OtherClass)
-
-for (dirpath, dirnames, filenames) in os.walk(os.path.join(os.path.realpath(__file__), "environments")):
-    for f in filenames:### make sure we don't add Base to that dict
-        if not f == "base.py":
-            EnvList[str(f)[:-3]] = ### HOW??? Gotta assign the specific class names...
-    break
-# Does each Env NEED to be a class? # I think so, yeah...
-# all Environments inherit from the base Env class because they all need to
-# remember their own internal state
-# uhh, no. That's *why* they're a class, not why they inherit from one.
-
-
-# Let's just get one working
-#
-# class numberGuess()
-
-
-
-currentEnv = EnvList[str(input())]
-
-def saveGenome(genes, genomeID:"tuple(int, int)", envStr:"str"):
-    with open(os.path.join(os.path.realpath(__file__), f"networks\\{envStr}\\NN{genomeID}.txt", "w")) as f:
-        f.writelines(genes)# Sim.initOrder[currentInitiative].seed()
-def loadGenome(genomeID:"tuple(int, int)", envStr:"str"):
-    '''returns a list of hexdecimal strings\n
-    but the first one is made of the first character from all of 'em cut off and stuck together\n
-    (in order, of course).'''
-    speed = list()
-    genome = list()
-    with open(os.path.join(os.path.realpath(__file__), f"networks\\{envStr}\\NN{genomeID}.txt"), "r") as f:
-        for line in f.readlines():
-            line2 = line.strip()
-            speed.append(line2[0])
-            genome.append(line2[1:])
-    genome.insert(0, speed)
-    return genome
-
-def decodeSpeed(speedGene:"str"):##### what happens if the genome is empty? The speed gene is empty. This needs to be resolved because speed gets decoded before the NN is init'd.
-
-    pass
-
 
 class Sim:
     def __init__(self, game:'str') -> None:### game needs to be a string?
@@ -269,7 +277,7 @@ class Sim:
         self.environment = pickEnv(game)### set to a user defined class which imports from Env
         self.playerCount = self.environment.getPlayerCount()#####
         # self.envHistory = dict()## a place to store kept Environments by a name in str and list of settings?
-        self.agents = dict()# container for all Agents in the Sim # FORMAT: speed:int =
+        self.agents = list()# container for all Agents in the Sim # FORMAT: speed:int =
         self.playersCount = int()
         self.initiativeOrder = list()
 
@@ -279,6 +287,29 @@ class Sim:
     def addAgent(self, agentID:"tuple(int, int)", environmentString:"str"):### load agent from genome into player dict, giving it a temporary 'system ID'. If it gets selected for reproduction, it will recieve a new ID and be saved.
         genome = loadGenome(agentID, environmentString)
         self.agents[f"NN{self.agents.__len__()+1}"] = Agent(self.environment.actionOptions)#####sleeepy
+        ### MUTATE
+        self.agents.append(Agent(
+            len(self.environment.actionOptions)-1),# how many output Nodes
+            
+        )
+        ### an Agent needs what again?
+        # Agent generates the NN so...
+        # how many output Nodes
+        # the genome - speed genes
+        # or wait, the NN mutates itself? shouldnt.
+        # but I need to load the genome
+        # mutate it
+        # take the speed off
+        # mutate it again
+        # pass that to Agent
+        # which passes it to NN
+        
+
+
+# def speeeed(agentObj):
+#     return agentObj.initiative
+
+# programming_languages.sort(key=speeeed)
 
 
         self.initiativeOrder.append(speed, )### f"NN{agentID[0]}-{agentID[1]}"
@@ -309,7 +340,6 @@ class Sim:
 
         ### IMPLEMENT SPEED GENE
         # Using these 16 permutations, I have 16 values for my initiative order...
-        # NNs can clone, so technichally I don't HAVE to ever keep parents alive, right?
         # Env should always have a value of 0 16 or 17, depending on sorting and the binary thing...
         # This speed value should be passed to addAgent along with the same Agents ID.
         #
@@ -320,18 +350,53 @@ class Sim:
         # Where each genome in the pool/folder is a txt file.
         # where each gene in the genome/txt is represented as a string of hexdec characters.
         #
-        # The next thing is the naming method for Genomes in storage.
+        # For each genome in the Sim, decide if its reward is high enough.
+        # After that is the naming method for Genomes to be stored.
         # The only Genomes in storage are the successful/best ones.
-        ### but how do they get selected? to be put there.
-
+        ### but how do they get selected to be put there?
+        #
+        #
+        #
+        # well. lets think about it.
+        # imagine an Env that takes 2 players taking turns
+        # perhaps all Envs are required to declare a func for endStates.
+        # chess might have endstate function as
+        # player whose turn it is has no legal moves
+        
+        # imagine an environment that takes one nn.
+        # in order to decide whether each given agent should be saved,
+        # we should track the performance, save the NN,
+        # then compare future NNs to the tracked score
+        # if the new score is lower, but maxNNPerGeneration hasnt been reached,
+        # save it anyway... 
+        # only once max has been reached does overwriting begin
+        # remember that the IDs change when saved/loaded.
+        # overwrite lowest score only if new score beats it.
+        # should use the ID of the overwritten NN
+        # which means for each current generation
+        # I have to track a list of
+        # the saved NNs reward scores with ID as index
+        # so that I can overwrite the lowest reward NN by its index in that list
+        # when doing so( if current_nn_score > lowestValue(latestGenerationScores:"list"))
+        # just save genome as you would normally
+        # but pass in the ID of the lowest score
+        #
+        #
+        # how do we know when the environment has reached an endState?
+        # examples: when a round limit is reached
+        # when the remaining players belong to the same faction? idk... neutrals... have their own 'faction's. its fine
+        # what about an environment where agents can join and be removed mid-game? round limit or nothing alive?
+        
         #####
 
     def advance(self, actions:'list[int]', envRules:'function'):
         '''Each Agent is always allowed one action per timestep.\n
         It is important to maintain the order of Agent actions.'''
         return envRules(actions)### make sure actions.len() can be varied between timesteps.(as long as len(actions) == len(agents))
-
-
+        ### are you suggesting that actions passed in here is
+        # a list of ALL Agent actions this initiative round??
+        # one action per initiative step, eh?
+ 
 
 
 
@@ -358,6 +423,32 @@ class Sim:
     #     # if keepEnv:
     #     #     pass### ugh
     #     self.environment = newEnv
+
+
+### Environments...
+# An environment needs to be entirely self contained.
+# The Sim will have asked an Agent what it wants to do.
+# The Agent responds with a list of bools.
+# I guess Sim only passes to Env the first True action in the list.
+# update Env internal state with selected action from specified Agent
+# Sim expects back an updated set of observations.
+# Env needs to be a class, right?
+# Just hoping Env doesnt need to be a socketed connection...
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ______________________________________________________________________________________
 
 # MAIN BLOCK

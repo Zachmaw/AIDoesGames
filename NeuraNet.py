@@ -43,8 +43,9 @@ def init_random_Genome(geneCount:"int"):
 
 def replace_str_index(text, index=0, replacement=''):
     return f'{text[:index]}{replacement}{text[index+1:]}'
-def generateMutationBitstring(geneLen:"int", toxicWasteBonus:"float"=0.01):
-    '''Default odds: 8/1000\nA float of 1.0 should cause mutation chance to be 999/1000\n Nat 1 is still a possibility.'''
+def generateMutationBitstring(geneLen:"int", toxicWasteBonus:"float"):
+    '''Default odds: 8/1000\nA float of 1.0 should cause mutation chance to be 999/1000,\n
+    But only because a Nat 1 is still a possibility.'''
     temp = list()
     for i in range(geneLen):
         if roll(1000, 993, 1000 * toxicWasteBonus):
@@ -57,8 +58,8 @@ def bitCombine(argA:"str", argB:"str"):# overlay mutation bitstring with gene bi
     for argi in range(len(argA)):
         temp.append(str((int(argA[argi]) + int(argB[argi])) % 2))
     return "".join(temp)
-def mutateBitstring(bitstring:"str"):
-    return bitCombine(bitstring, generateMutationBitstring(36))
+def mutateBitstring(bitstring:"str", b):
+    return bitCombine(bitstring, generateMutationBitstring(36, b))
 def mutateHexdec(gene:"str", radiationBonus:"float"):
     '''raises/lowers the value of random bonds by one'''
     for i in range(len(gene)):
@@ -77,7 +78,7 @@ def perceptron(node:"tuple[list[float], int, float]", activationFuncOfChoice):# 
 class NeuralNetwork():
     # For Internal Nodes, ID is the node's ID as an int key in self.internalNodes:'dict'
     # For Output Nodes, ID is merely the node's index in self.outputNodes:'list'
-    def __init__(self, outputCount:'int'=1, generation:"int"=1, genes:'list[str]'=None, irradiation:"float"=0.01):
+    def __init__(self, outputCount:'int'=1, generation:"int"=1, genes:'list[str]'=None, toxicWaste:"float"=0.01):
         ### self.costToExist = (int(), float())# cost to exist per turn
         if genes == None:# make some genes based on generation
             genes = init_random_Genome(ceil(generation * 0.75))# f(x)=0.75x
@@ -89,16 +90,13 @@ class NeuralNetwork():
         for i in range(outputCount):# add all output nodes to the first layer of the Neuron structure
             self.outputNodes.append((list(), int()))# Shape: tuple(tuple(list[float(input storage)], float(bias), float(output storage))
             self.layersNeuron[0].append(i)# List of ID pointers. That's it. Because all output Neurons are in the last layer, they don't need output type.
+            # why is that append not lighting up?# The IDE doesnt know the first Neuron layer is a list.
         backBurner = list()
         workingLayerSynapses = list()
         currentLayerInputIDs = list()
         genome = list# for every gene, make it a bitstring, mutate it, then disect it, turn it back into hexString, and store it in genome.
         for i in range(len(genes)):# run through all the genes in the genome# Decode all the connections into tuples.# for synapse(index) in the_genome:
-            temp = mutateHexdec(genes[i], irradiation)# MUTATION * 2 COMBO | By way of irradiation and for growing NNs.
-            ### Right before the Hex string translates to binary, grab the speed.
-            # that means speed gene is never binary, and never recieves binary mutation chance... OH WELL!
-            # oh no, we're already looping through the genes... hmmm.
-            bitstring = mutateBitstring(hextobin(temp))
+            bitstring = mutateBitstring(hextobin(genes), toxicWaste)
             genome.append(binToHex(bitstring))## (Note to self: Calm down, that's why this is on it's own line..)
             decodedSynapse = (# disect it
                 int(bitstring[0]),# 0 is inputInput, 1 is internal input. 1 bit

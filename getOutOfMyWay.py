@@ -221,3 +221,6 @@
 
 # #     # Adjust the weights.
 # #     self.synaptic_weights += adjustment
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~ End of Gradient descent ~~~~~~~~~~~~~~~
