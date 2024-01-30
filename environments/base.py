@@ -24,26 +24,15 @@ class Env:
         # self.init_order.append((50, "LairAction"))
         self.thisRoundResponses = list()# to be filled to player count once an EnvChild inherits it.
         # self.gamestate = dict()
-    def getResponse(self, actionVector:'list[int]', envRules:'function'):### old concept... class now, not func.
-        '''
-        should take in the action of the current agent and\n
-        return a list of observations that can be made about the environment\n
-        which comes directly from envRules\n
-        based on the game being played\n
-        Each Agent is always allowed one action per timestep.\n
-        It is important to maintain the order of Agent actions.'''
-        # which is why I'm going with the initiative method.
-        # time advances one tick with each revolution of the initiative tracker.
-        ### if this agent is the Environment, increase SimRuntime by one tick.
-        # that's it, save for specific Environments.
-        return envRules(actionVector)
+        self.PlayerCount = None
 
     def setRules(self, gameRules:"function"):
         self.rules = gameRules
-    def actAndObserve(self, actionVector):
-        return self.rules(actionVector)
+    def actAndObserve(self, actionChoice:"int"):
+        return self.rules(actionChoice)
+    
     def getPlayerCount(self):
-        pass###
+        return self.playerCount
 
     def advance(self):
         ### from whose turn it is in the game, update the internal game state based on actions taken
@@ -51,7 +40,7 @@ class Env:
         # but they also see it's not their turn.
         # This function is called after all players have submitted their responses.
         # somehow update the gameState from the response from player-whos-turn.
-        # and set new observations for... all? just actve player?
+        # and set new observations for... all? just active player?
         #
         # Is it better to represent gamestate as a list of ints with variable length based on environment
         # would a list of int work?? does it have to be dict?
@@ -68,7 +57,8 @@ class Env:
             self.p2Went = True
 
 
-class DefaultGame(Env):
+#####
+class Chess(Env):
     def __init__(self, id, maxPlayers):### add the other atributes a game object would have( like??)
         super().__init__(id)
         self.playerLimit = maxPlayers# The player limit

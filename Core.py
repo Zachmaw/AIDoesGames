@@ -34,14 +34,9 @@
 
 
 import pygame, os
-# from sys import exit
-# import random
 from NeuraNet import NeuralNetwork
 from environments.base import *
-from operator import itemgetter
 from numpy import random
-
-
 from environments.Dice import Pig
 
 
@@ -54,31 +49,18 @@ def uniquify(path):
         counter += 1
     return (path, counter)
 
-
-
-
 def saveGenome(genes, genomeID:"tuple(int, int)", envStr:"str"):
     with open(os.path.join(os.path.realpath(__file__), f"networks\\{envStr}\\NN{genomeID}.txt", "w")) as f:
         f.writelines(genes)# Sim.initOrder[currentInitiative].seed()
 def loadGenome(genomeID:"tuple(int, int)", envStr:"str"):
     '''returns a list of hexdecimal strings\n
-    but the first one is made of the first character from all of 'em cut off and stuck together\n
+    but the first one is a list made of the cut off first character from all of 'em\n
     (in order, of course).'''
-    speed = list()
     genome = list()
-    with open(os.path.join(os.path.realpath(__file__), f"networks\\{envStr}\\NN{genomeID}.txt"), "r") as f:
+    with open(os.path.join(os.path.realpath(__file__), '..', f"networks\\{envStr}\\NN{genomeID[0]}-{genomeID[1]}.txt"), "r") as f:
         for line in f.readlines():
-            line2 = line.strip()
-            speed.append(line2[0])
-            genome.append(line2[1:])
-    genome.insert(0, speed)
+            genome.append(line.strip())
     return genome
-
-def decodeSpeed(speedGene:"str"):##### what happens if the genome is empty? The speed gene is empty. This needs to be resolved because speed gets decoded before the NN is init'd.
-
-    pass
-
-
 
 def geneCountMath(x:"int"):
     '''return a float in the range(0, 0.89)'''
@@ -88,9 +70,9 @@ def geneCountMath(x:"int"):
         return 0.1
     else:
         return -0.0065 * x + 1
- 
 def fetchBonus(funcOut:"float"):
-    '''input range (0, 0.999)'''
+    '''Input range(0, 0.89)
+    Output range(-2, 2)'''
     t = funcOut * 5
     if t < 1:
         return -2
@@ -102,91 +84,59 @@ def fetchBonus(funcOut:"float"):
         return 1
     else:
         return 2
+def decodeSpeed(speedGene:"str"):
+    '''Takes the hexStr in from speed gene.
+    Decode it to a list of numbers.
+    Get bonus from list length.
+    Average the list.
+    Add the bonus.
+    return the total initiative value.'''
+    if not len(speedGene):
+        return 1
+    temp = list()
+    geneCount = int()
+    for hexdecChar in speedGene:
+        temp.append(int(hexdecChar, 16))
+        geneCount += 1
+    bonusInput = fetchBonus(geneCountMath(geneCount))
+    return round(sum(temp) / geneCount) + bonusInput
  
-
 
 
 
  
 ### new mutation algorythm
-# all mutating should occur within NN
-
- 
- 
 
 
 
+def bootEnv(name):
+    klass = EnvList(name)
+    return klass()##### So, we're returning a called instance of whatever Environment we've chosen,
+                        # but always without arguments...
 
 
-
-### a lot of this should be writen outside the environment... Only pass in decoded actions from the users?
-                                                    # yeah, make the Sim dumb it down for NN Agents. Better than making it smart up for users...
-        ### define NN then come back# lol this was before NN was defined?
-        # self.currentMove = inputs[self.turn]# find out who's turn it is and extract active player action
-        # for player in inputs:
-        #     result = self.decodeActs(player)
-        #     if result == 1:
-        #         tempN = self.roll(self.DICE[floor(self.round * 0.5)])#every even round use the next dice up
-        #         if tempN == 0:
-        #             self.turn += 1### Im not sure that's all I had to do here...
-        #         else:# didn't roll 0
-        #             self.tempScore += tempN
-        #     else:
-        #         self.players[self.turn] += self.tempScore
-        #         self.turn += 1
-
-
-
-EnvList = {##EnvList[f[:-3]]
+EnvList = {
     'pig': Pig,
     'dice': Pig
 }
-# name_to_class = dict(some=SomeClass,
-#                      other=OtherClass)
-
-def pickEnv(name):
-    klass = EnvList(name)
-    return klass()##### So, we're returning a called instance of whatever Environment we've chosen,
-                        # but always without any arguments.
-
 validEnvNames = EnvList.keys()
-# for (dirpath, dirnames, filenames) in os.walk(os.path.join(os.path.realpath(__file__), "environments")):
-#     for f in filenames:
-#         if f[-3:] == ".py":# Check the extention
-#             if not f == "Base.py":# make sure we don't add Base to that dict
-#                 validEnvNames.append(f[:-3])### hard code in all the avaliable Environments
-#                 # this chunk can add the names to a list so users can only select a valid target from that list.
-#     break       # or dict, whatever.
-
-# env = pickEnv()
-# currentEnv = EnvList[str(input())]
-
-EnvList = {}
 # name_to_class = dict(some=SomeClass,
 #                      other=OtherClass)
 
-for (dirpath, dirnames, filenames) in os.walk(os.path.join(os.path.realpath(__file__), "environments")):
-    for f in filenames:### make sure we don't add Base to that dict
-        if not f == "base.py":
-            pass# this was for something else entirely...# EnvList[str(f)[:-3]] = ### HOW??? Gotta assign the specific class names...
-    break
 
 
-# all Environments inherit from the base Env class because they all need to
-# remember their own internal state
+def pickEnv():
+    trying = True
+    while trying:
+        try:
+            choice = str(input("Which environment we runnin', Baby?"))
+            ### check if response is in list of valid responses
+            if choice in validEnvNames:
+                print("A descision, made...\n\n")
+                return choice
+        except:
+            print("That's not a valid entry at the moment.\nSorry if you believe this to be in error.\n\n\n\n\nbut it's not.")
 
-
-
-currentEnv = EnvList[str(input())]
-
-
-
-
-# Does each Env NEED to be a class?
-# all Environments inherit from the base Env class because... something.
-# they remember their own internal state
-# but they need rules by which to update those states.
-    #
 
 
         # gamestate will be filled with things like:
@@ -196,14 +146,6 @@ currentEnv = EnvList[str(input())]
         # various point values, yes like...
         # table score/the pot, ez
         # all players total scores, list with length(all players)
-
-
-
-# Let's just get one working
-#
-# class numberGuess()
-
-
 
 
 
@@ -218,8 +160,6 @@ currentEnv = EnvList[str(input())]
 waitingPlayers = list()# le HUH?
 
 
-
-
 class Player:
     def __init__(self, id) -> None:
         self.ID = id
@@ -231,12 +171,6 @@ class Player:
     def queueUp(self):
         waitingPlayers.append(self.ID)
 
-
-
-######
-# self.brain = NeuralNetwork(expectedOutputs:'int', genes:'list[str]', irradiation:"float"=0.01):
-# saveGenome(agent.brain.seed())
-### Gets called by the Sim when the Network has been selected to aid in repopulation.
 
 HEX_OPTIONS = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"]
 
@@ -255,50 +189,37 @@ def roll(d, dc, bonus):
         return False
 def hextobin(hexaString):
   return bin(int(hexaString, 16))[2:].zfill(len(hexaString) * 4)
-def mutateHexdec(gene:"str", radiationBonus:"float"):
-    '''raises/lowers the value of random bonds by one'''
+def mutateHexdec(gene:"str", radiationExposure:"float", radiationSeverity:"int"):
+    '''raises/lowers the value of random bonds by severity modulo 16'''
     for i in range(len(gene)):
-        if roll(1000, 994, 1000 * radiationBonus):
-            gene = replace_str_index(gene, i, HEX_OPTIONS[int(hextobin(gene[i]), 2) + random.choice([1, 15]) % 16])
+        if roll(1000, 994, 1000 * radiationExposure):### it shouldnt loop over from 0 to 15 and vice versa. Cap it.
+            gene = replace_str_index(gene, i, HEX_OPTIONS[int(gene[i], 16) + random.choice([1 + radiationSeverity, 15 + radiationSeverity]) % 16])
     return gene
 
-def decodeSpeed(speedGene:"str"):
-    '''Takes the hexStr in from speed gene.
-    Decode it to a list of numbers.
-    Get bonus from list length.
-    Average the list.
-    Add the bonus.
-    return the total initiative value.'''
-    temp = list()
-    geneCount = int()
-    for hexdecChar in speedGene:
-        temp.append(int(hexdecChar, 16))
-        geneCount += 1
-    bonusInput = fetchBonus(geneCountMath(geneCount))
-    return round(sum(temp) / geneCount) + bonusInput
- 
 # What if the first output node( in sequence) firing means the network wants to update it's memory
 # The second and third indicate location(, but by what formatting?).
 # And the fourth output indicating what to set to.
-# As for location formatting... From two independent floats to a point on a 2D grid.
-######
+# As for location formatting... From two independent floats to a point on a 2D grid?
+##### Memory
+
 class Agent:# Recieves rewards and observations, and returns an action
-    def __init__(self, outputCount:"int"=1, generation:"int"=1, memory:"tuple(int, int)"=None, geneSeq:'list[str]'=None, radiation:"float"=0.01, toxicWaste:"float"=0):
-        self.memories = list()
-        for x in memory[0]:
-            self.memories.append(str())## alternatively .append("")
-            for y in memory[1]:
-                self.memories[x] += "0"
+    def __init__(self, outputCount:"int"=1, geneSeq:'list[str]'=None, memory:"tuple(int, int)"=None, generation:"int"=1, radiation:"float"=0.01, toxicWaste:"float"=0.01):
+        if memory:
+            self.memories = list()
+            for x in range(memory[0]):
+                self.memories.append(str())
+                for y in range(memory[1]):
+                    self.memories[x] += "0"
         if geneSeq:# Build a NN from a Genome to handle the object.
             cleanGenes = list()
-            speedGene = list()
+            self.speedGene = list()
             for i in range(len(geneSeq)):# extract speed
-                temp = mutateHexdec(geneSeq[i], radiation)
-                speedGene.append(temp[0])
+                temp = mutateHexdec(geneSeq[i], radiation, 0)## something to play with
+                self.speedGene.append(temp[0])
                 cleanGenes.append(temp[1:])
             del temp
-            self.nn = NeuralNetwork(outputCount, generation, cleanGenes, toxicWaste)
-            self.speed = decodeSpeed("".join(speedGene))
+            self.nn = NeuralNetwork(outputCount, cleanGenes, toxicWaste, generation)
+            self.initiative = decodeSpeed("".join(self.speedGene))
 
         else:### No genome given, Check if any humans are waiting to play
             if not len(waitingPlayers):# if no players waiting, proceed
@@ -308,98 +229,42 @@ class Agent:# Recieves rewards and observations, and returns an action
             pass### Make the object recieve input from input devices( wait on the User)
             # *This* Agent is a Player instead of a NN
 
-    # def rollInitiative(self):
-    #     # self.initiative =
-    #     pass
-
+    def seed(self):
+        base = self.nn.seed()
+        temp = list()
+        for i in range(base):
+            temp.append(f'\\n{self.speedGene[i]}{base[i]}')
+        return temp
 
 
 
 
 class Sim:
-    def __init__(self, game:'str') -> None:### game needs to be a string?
+    def __init__(self, game:'str') -> None:
         '''Initialize an environment for this simulation'''
-        self.environment = pickEnv(game)### set to a user defined class which imports from Env
-        self.playerCount = self.environment.getPlayerCount()#####
+        self.environment = bootEnv(game)### set to a user defined class which imports from Env
+        self.playerCount = self.environment.getPlayerCount()
         # self.envHistory = dict()## a place to store kept Environments by a name in str and list of settings?
-        self.agents = list()# container for all Agents in the Sim # FORMAT: speed:int =
-        self.playersCount = int()
+        self.agents = list()# container for all Agents in the Sim
         self.initiativeOrder = list()
 
         # self.initiativeOrder.append(50, "LairAction")
+    
+    def sortF(self, incomingAgentID:"int"):
+        return self.agents[incomingAgentID].initiative# range(1,20)
 
+    def addAgent(self, agentID:"tuple(int, int)", environmentName:"str"):### load agent from genome into player dict, giving it a temporary 'system ID'. If it gets selected for reproduction, it will recieve a new ID and be saved.
+        genome = loadGenome(agentID, environmentName)
+        self.agents.append(Agent(# Generate Agent, store it in list with ID as index
+            len(self.environment.actionOptions)-1),# how many output Nodes, -1 because any NN could always idle.
+            genome)
 
-    def addAgent(self, agentID:"tuple(int, int)", environmentString:"str"):### load agent from genome into player dict, giving it a temporary 'system ID'. If it gets selected for reproduction, it will recieve a new ID and be saved.
-        genome = loadGenome(agentID, environmentString)
-        self.agents[f"NN{self.agents.__len__()+1}"] = Agent(self.environment.actionOptions)#####sleeepy
-        ### MUTATE
-        self.agents.append(Agent(
-            len(self.environment.actionOptions)-1),# how many output Nodes
-            
-        )
-        ### an Agent needs what again?
-        # Agent generates the NN so...
-        # how many output Nodes
-        # the genome - speed genes
-        # or wait, the NN mutates itself? shouldnt.
-        # but I need to load the genome
-        # mutate it
-        # take the speed off
-        # mutate it again
-        # pass that to Agent
-        # which passes it to NN
+        self.initiativeOrder.append(len(self.agents))# Put the AgentID in the initiative order list
+        self.initiativeOrder.sort(key=self.sortF, reverse=True)# initOrder = list[agentID] sorted by self.agents[agentID].initiative
         
 
 
-# def speeeed(agentObj):
-#     return agentObj.initiative
 
-# programming_languages.sort(key=speeeed)
-
-
-        self.initiativeOrder.append(speed, )### f"NN{agentID[0]}-{agentID[1]}"
-        # sorts by initiative roll
-        self.initiativeOrder = sorted(self.initiativeOrder, key=itemgetter(1), reverse=True)
-        #####
-        # What I need to do is either put the AgentID in the initiative order list
-        # or put the Agent itself in the list?
-        # well, when I build the NN from a saved txt file Genome, I have to store it in memory.
-        # Generate NN, store it in dict with key as f"NN{playerNumber}"
-        # So list it is...initOrder = list[tuple(speed, agentID)]
-        # players = dict{agentID:Agent}
-
-    # def addAgent(self, agentID:"int", speed:"int"):### why is that a tuple? how big is it suposed to be?
-    #     self.init_order.append(speed, agentID))
-    #     # sorts by initiative roll
-    #     self.init_order = sorted(self.init_order, key=itemgetter(1), reverse=True)
-    #     #####
-    #     # What I need to do is either put the AgentID in the initiative order list
-    #     # or put the Agent itself in the list?
-    #     # well, when I build the NN from a saved txt file Genome, I have to store it in Sim memory as a list named initOrder.
-
-    #     # Generate NN, store it in dict with key as f"NN{playerNumber}"
-
-
-
-
-
-        ### IMPLEMENT SPEED GENE
-        # Using these 16 permutations, I have 16 values for my initiative order...
-        # Env should always have a value of 0 16 or 17, depending on sorting and the binary thing...
-        # This speed value should be passed to addAgent along with the same Agents ID.
-        #
-        #
-        # I need to have a gene pool to reference with agentID
-        # A gene pool can be:
-        # A seperate folder for each Environments gene pool.
-        # Where each genome in the pool/folder is a txt file.
-        # where each gene in the genome/txt is represented as a string of hexdec characters.
-        #
-        # For each genome in the Sim, decide if its reward is high enough.
-        # After that is the naming method for Genomes to be stored.
-        # The only Genomes in storage are the successful/best ones.
-        ### but how do they get selected to be put there?
-        #
         #
         #
         # well. lets think about it.
@@ -461,34 +326,15 @@ class Sim:
 
 
 
-    # def setEnvironment(self,newEnv,keepEnv:'bool'=False):
-    #     '''Set a new environment for this simulation
-    #     (Almost always incredibly deadly for Agent objects...)'''
-    #     # ### keepEnv
-    #     # if keepEnv:
-    #     #     pass### ugh
-    #     self.environment = newEnv
 
 
-### Environments...
+# # # Environments...
 # An environment needs to be entirely self contained.
 # The Sim will have asked an Agent what it wants to do.
-# The Agent responds with a list of bools.
-# I guess Sim only passes to Env the first True action in the list.
-# update Env internal state with selected action from specified Agent
-# Sim expects back an updated set of observations.
-# Env needs to be a class, right?
-# Just hoping Env doesnt need to be a socketed connection...
+# The Agent responds with an int representing it's selection.###
+# update Env internal state with selected action from specified Agent.###
+# Sim expects back an updated set of observations.###
  
-
-
-
-
-
-
-
-
-
 
 
 
@@ -500,20 +346,3 @@ class Sim:
 if __name__ == "__main__":
     pass
 
-
-
-
-
-
-
-
-## gradient descent... I didn't end up using. I went with Genetic.
-# from numpy import exp, array, random, dot
-# training_set_inputs = array([[0, 0, 1], [1, 1, 1], [1, 0, 1], [0, 1, 1]])
-# training_set_outputs = array([[0, 1, 1, 0]]).T
-# random.seed(1)
-# synaptic_weights = 2 * random.random((3, 1)) - 1
-# for iteration in xrange(10000):
-#     output = 1 / (1 + exp(-(dot(training_set_inputs, synaptic_weights))))
-#     synaptic_weights += dot(training_set_inputs.T, (training_set_outputs - output) * output * (1 - output))
-# print( 1 / (1 + exp(-(dot(array([1, 0, 0]), synaptic_weights)))))

@@ -70,7 +70,10 @@ def perceptron(node:"tuple[list[float], int, float]", activationFuncOfChoice):# 
 class NeuralNetwork():
     # For Internal Nodes, ID is the node's ID as an int key in self.internalNodes:'dict'
     # For Output Nodes, ID is merely the node's index in self.outputNodes:'list'
-    def __init__(self, outputCount:'int'=1, generation:"int"=1, genes:'list[str]'=None, toxicWaste:"float"=0.01):
+    def __init__(self, outputCount:'int'=1, genes:'list[str]'=None, toxicWaste:"float"=0.01, generation:"int"=1):
+        '''
+        Generation param is only needed if genes are not provided.
+        '''
         ### self.costToExist = (int(), float())# cost to exist per turn
         if genes == None:# make some genes based on generation
             genes = init_random_Genome(ceil(generation * 0.75))# f(x)=0.75x
@@ -214,11 +217,8 @@ class NeuralNetwork():
         return self.proccessFinalNodeLayer(self)# run final output node layer
 
     def seed(self):### does a txt file being read in show line breaks?
-        '''returns a genome ready to by saved to a txt doc or '''
-        temp = list()
-        for gene in self.genome:
-            temp.append(f'\\n{gene}')
-        return temp
+        '''returns a genome ready to have speed appended to the front of each gene'''
+        return self.genome
 
 # MAIN BLOCK
 if __name__ == "__main__":

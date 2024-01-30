@@ -268,30 +268,12 @@ class Agent:# Recieves rewards and observations, and returns an action
  
  
  
- 
-EnvList = {}
-# name_to_class = dict(some=SomeClass,
-#                      other=OtherClass)
- 
-for (dirpath, dirnames, filenames) in os.walk(os.path.join(os.path.realpath(__file__), "environments")):
-    for f in filenames:### make sure we don't add Base to that dict
-        if not f == "base.py":
-            EnvList[str(f)[:-3]] = ### HOW??? Gotta assign the specific class names...
-    break
 # Does each Env NEED to be a class? # I think so, yeah...
 # all Environments inherit from the base Env class because they all need to
 # remember their own internal state
 # uhh, no. That's *why* they're a class, not why they inherit from one.
  
  
-# Let's just get one working
-#
-# class numberGuess()
- 
- 
- 
- 
-currentEnv = EnvList[str(input())]
  
 # which means when this is called by the Sim
 # (which is where the Agents are stored)
