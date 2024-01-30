@@ -41,8 +41,6 @@ def init_random_Genome(geneCount:"int"):
         genome.append(randomOneGene())
     return genome# a list of hexdec strings( each with len(9))
 
-def replace_str_index(text, index=0, replacement=''):
-    return f'{text[:index]}{replacement}{text[index+1:]}'
 def generateMutationBitstring(geneLen:"int", toxicWasteBonus:"float"):
     '''Default odds: 8/1000\nA float of 1.0 should cause mutation chance to be 999/1000,\n
     But only because a Nat 1 is still a possibility.'''
@@ -60,12 +58,6 @@ def bitCombine(argA:"str", argB:"str"):# overlay mutation bitstring with gene bi
     return "".join(temp)
 def mutateBitstring(bitstring:"str", b):
     return bitCombine(bitstring, generateMutationBitstring(36, b))
-def mutateHexdec(gene:"str", radiationBonus:"float"):
-    '''raises/lowers the value of random bonds by one'''
-    for i in range(len(gene)):
-        if roll(1000, 994, 1000 * radiationBonus):
-            gene = replace_str_index(gene, i, HEX_OPTIONS[int(hextobin(gene[i]), 2) + random.choice([1, 15]) % 16])
-    return gene
 
 def perceptron(node:"tuple[list[float], int, float]", activationFuncOfChoice):# AKA, it shouldn't have an ID by this point. No lookups.
     tempN = float()# add up the inputs which are already stored
@@ -94,9 +86,9 @@ class NeuralNetwork():
         backBurner = list()
         workingLayerSynapses = list()
         currentLayerInputIDs = list()
-        genome = list# for every gene, make it a bitstring, mutate it, then disect it, turn it back into hexString, and store it in genome.
+        genome = list()# for every gene, make it a bitstring, mutate it, then disect it, turn it back into hexString, and store it in genome.
         for i in range(len(genes)):# run through all the genes in the genome# Decode all the connections into tuples.# for synapse(index) in the_genome:
-            bitstring = mutateBitstring(hextobin(genes), toxicWaste)
+            bitstring = mutateBitstring(hextobin(genes[i]), toxicWaste)
             genome.append(binToHex(bitstring))## (Note to self: Calm down, that's why this is on it's own line..)
             decodedSynapse = (# disect it
                 int(bitstring[0]),# 0 is inputInput, 1 is internal input. 1 bit

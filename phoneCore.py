@@ -307,21 +307,6 @@ def loadGenome(genomeID:"tuple(int, int)", envStr:"str"):
             genome.append(line.strip())
     return genome
  
-def decodeSpeed(speedGene:"str"):
-    '''Takes the hexStr in from speed gene.
-    Decode it to a list of numbers.
-    Get bonus from list length.
-    Average the list.
-    Add the bonus.
-    return the total initiative value.'''
-    temp = list()
-    geneCount = int()
-    for hexdecChar in speedGene:
-        temp.append(int(hexdecChar, 16))
-        geneCount += 1
-    bonusInput = fetchBonus(geneCountMath(geneCount))
-    return sum(temp) / geneCount + bonusInput
- 
  
  
         speedSeq = list()

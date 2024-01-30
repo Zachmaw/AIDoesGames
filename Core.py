@@ -39,6 +39,7 @@ import pygame, os
 from NeuraNet import NeuralNetwork
 from environments.base import *
 from operator import itemgetter
+from numpy import random
 
 
 from environments.Dice import Pig
@@ -237,23 +238,67 @@ class Player:
 # saveGenome(agent.brain.seed())
 ### Gets called by the Sim when the Network has been selected to aid in repopulation.
 
+HEX_OPTIONS = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"]
 
+def replace_str_index(text, index=0, replacement=''):
+    return f'{text[:index]}{replacement}{text[index+1:]}'
 
+def roll(d, dc, bonus):
+    r = random.randint(1, d+1)
+    if r == d:# if critical roll
+        return True
+    if r == 1:# if natural 1
+        return False
+    if dc <= r + bonus:
+        return True
+    else:
+        return False
+def hextobin(hexaString):
+  return bin(int(hexaString, 16))[2:].zfill(len(hexaString) * 4)
+def mutateHexdec(gene:"str", radiationBonus:"float"):
+    '''raises/lowers the value of random bonds by one'''
+    for i in range(len(gene)):
+        if roll(1000, 994, 1000 * radiationBonus):
+            gene = replace_str_index(gene, i, HEX_OPTIONS[int(hextobin(gene[i]), 2) + random.choice([1, 15]) % 16])
+    return gene
 
+def decodeSpeed(speedGene:"str"):
+    '''Takes the hexStr in from speed gene.
+    Decode it to a list of numbers.
+    Get bonus from list length.
+    Average the list.
+    Add the bonus.
+    return the total initiative value.'''
+    temp = list()
+    geneCount = int()
+    for hexdecChar in speedGene:
+        temp.append(int(hexdecChar, 16))
+        geneCount += 1
+    bonusInput = fetchBonus(geneCountMath(geneCount))
+    return round(sum(temp) / geneCount) + bonusInput
+ 
 # What if the first output node( in sequence) firing means the network wants to update it's memory
 # The second and third indicate location(, but by what formatting?).
 # And the fourth output indicating what to set to.
 # As for location formatting... From two independent floats to a point on a 2D grid.
 ######
 class Agent:# Recieves rewards and observations, and returns an action
-    def __init__(self, outputCount:"int"=1, generation:"int"=1, memory:"tuple(int, int)"=None, geneSeq:'list[str]'=None, rads:"float"=0.01):
-        self.memory = list()
-        for y in memory[0]:
-            self.memory.append(str())## alternatively .append("")
-            for x in memory[1]:
-                self.memory[y] += "0"
-        if geneSeq:### Build a NN from a Genome to handle the object.
-            self.nn = NeuralNetwork(outputCount, generation, geneSeq, rads)
+    def __init__(self, outputCount:"int"=1, generation:"int"=1, memory:"tuple(int, int)"=None, geneSeq:'list[str]'=None, radiation:"float"=0.01, toxicWaste:"float"=0):
+        self.memories = list()
+        for x in memory[0]:
+            self.memories.append(str())## alternatively .append("")
+            for y in memory[1]:
+                self.memories[x] += "0"
+        if geneSeq:# Build a NN from a Genome to handle the object.
+            cleanGenes = list()
+            speedGene = list()
+            for i in range(len(geneSeq)):# extract speed
+                temp = mutateHexdec(geneSeq[i], radiation)
+                speedGene.append(temp[0])
+                cleanGenes.append(temp[1:])
+            del temp
+            self.nn = NeuralNetwork(outputCount, generation, cleanGenes, toxicWaste)
+            self.speed = decodeSpeed("".join(speedGene))
 
         else:### No genome given, Check if any humans are waiting to play
             if not len(waitingPlayers):# if no players waiting, proceed
