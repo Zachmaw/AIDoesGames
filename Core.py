@@ -50,12 +50,10 @@ def uniquify(path):
     return (path, counter)
 
 def saveGenome(genes, genomeID:"tuple(int, int)", envStr:"str"):
-    with open(os.path.join(os.path.realpath(__file__), f"networks\\{envStr}\\NN{genomeID}.txt", "w")) as f:
-        f.writelines(genes)# Sim.initOrder[currentInitiative].seed()
+    with open(os.path.join(os.path.realpath(__file__), f"networks\\{envStr}\\NN{genomeID[0]}-{genomeID[1]}.txt", "w")) as f:
+        f.writelines(genes)### Sim.agents[Sim.initOrder[currentAgent?]].seed()
 def loadGenome(genomeID:"tuple(int, int)", envStr:"str"):
-    '''returns a list of hexdecimal strings\n
-    but the first one is a list made of the cut off first character from all of 'em\n
-    (in order, of course).'''
+    '''returns a list of hexdecimal strings from a txt file'''
     genome = list()
     with open(os.path.join(os.path.realpath(__file__), '..', f"networks\\{envStr}\\NN{genomeID[0]}-{genomeID[1]}.txt"), "r") as f:
         for line in f.readlines():
@@ -104,15 +102,8 @@ def decodeSpeed(speedGene:"str"):
 
 
 
- 
-### new mutation algorythm
 
 
-
-def bootEnv(name):
-    klass = EnvList(name)
-    return klass()##### So, we're returning a called instance of whatever Environment we've chosen,
-                        # but always without arguments...
 
 
 EnvList = {
@@ -120,7 +111,7 @@ EnvList = {
     'dice': Pig
 }
 validEnvNames = EnvList.keys()
-# name_to_class = dict(some=SomeClass,
+# list_of_environments = dict(some=SomeClass,
 #                      other=OtherClass)
 
 
@@ -130,22 +121,22 @@ def pickEnv():
     while trying:
         try:
             choice = str(input("Which environment we runnin', Baby?"))
-            ### check if response is in list of valid responses
             if choice in validEnvNames:
                 print("A descision, made...\n\n")
-                return choice
+                trying = False
         except:
-            print("That's not a valid entry at the moment.\nSorry if you believe this to be in error.\n\n\n\n\nbut it's not.")
+            print("That's not a valid entry at the moment.\nSorry if you believe this to be in error.\n\n\n\n\nbut it's not.\n}:)")
+    return choice
 
 
 
-        # gamestate will be filled with things like:
-        # day or night, yes
-        # player turn number, Sim can pass it into whatever's being passed to the Agent
-        # round/turn/day number, yes, if it's a round based game, it can be handled by the game.
-        # various point values, yes like...
-        # table score/the pot, ez
-        # all players total scores, list with length(all players)
+# gamestate will be filled with things like:
+# day or night, yes
+# player turn number, Sim can pass it into whatever's being passed to the Agent
+# round/turn/day number, yes, if it's a round based game, it can be handled by the game.
+# various point values, yes like...
+# table score/the pot, ez
+# all players total scores, list with length(all players)
 
 
 
@@ -238,36 +229,37 @@ class Agent:# Recieves rewards and observations, and returns an action
 
 
 
-
 class Sim:
+    def bootEnv(name):
+        klass = EnvList(name)
+        return klass()##### So, we're returning a called instance of whatever Environment we've chosen,
+                            # but always without arguments...
     def __init__(self, game:'str') -> None:
         '''Initialize an environment for this simulation'''
-        self.environment = bootEnv(game)### set to a user defined class which imports from Env
-        self.playerCount = self.environment.getPlayerCount()
+        self.environment = self.bootEnv(game)### set to a user defined class which imports from Env
+        self.playerCount = self.environment.PlayerCount
         # self.envHistory = dict()## a place to store kept Environments by a name in str and list of settings?
         self.agents = list()# container for all Agents in the Sim
         self.initiativeOrder = list()
 
         # self.initiativeOrder.append(50, "LairAction")
     
-    def sortF(self, incomingAgentID:"int"):
+    def sortFunc(self, incomingAgentID:"int"):
         return self.agents[incomingAgentID].initiative# range(1,20)
-
+    def sortInitiative(self):
+        self.initiativeOrder.sort(key=self.sortFunc, reverse=True)# initOrder = list[agentID] sorted by self.agents[agentID].initiative
     def addAgent(self, agentID:"tuple(int, int)", environmentName:"str"):### load agent from genome into player dict, giving it a temporary 'system ID'. If it gets selected for reproduction, it will recieve a new ID and be saved.
         genome = loadGenome(agentID, environmentName)
         self.agents.append(Agent(# Generate Agent, store it in list with ID as index
             len(self.environment.actionOptions)-1),# how many output Nodes, -1 because any NN could always idle.
             genome)
-
         self.initiativeOrder.append(len(self.agents))# Put the AgentID in the initiative order list
-        self.initiativeOrder.sort(key=self.sortF, reverse=True)# initOrder = list[agentID] sorted by self.agents[agentID].initiative
         
 
 
 
         #
         #
-        # well. lets think about it.
         # imagine an Env that takes 2 players taking turns
         # perhaps all Envs are required to declare a func for endStates.
         # chess might have endstate function as
@@ -311,21 +303,6 @@ class Sim:
 
 
 
-# class Simulation:
-#     def __init__(self, environment:'Env') -> None:
-#         self.environment = environment
-#         self.running = False
-#     def advance(self):
-#         pass
-#     def run(self):
-#         # repetedly call advance
-#         while self.running:
-#             self.advance()
-#         pass
-
-
-
-
 
 
 # # # Environments...
@@ -344,5 +321,13 @@ class Sim:
 
 # MAIN BLOCK
 if __name__ == "__main__":
+    simulation = Sim(pickEnv())# so we have a Sim generated from a selected Env.
     pass
 
+
+
+
+
+
+
+### new mutation algorythm
