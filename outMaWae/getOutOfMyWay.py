@@ -390,6 +390,17 @@
 
 # ~~~~~~~~~~~~~~~~~~~~~~~ End of Gradient descent ~~~~~~~~~~~~~~~
 
+# ~~~~~~~~~~~~ something
+
+def uniquify(path):
+    filename, extension = os.path.splitext(path)
+    counter = 0
+    while os.path.exists(path):
+        path = filename + " (" + str(counter) + ")" + extension
+        counter += 1
+    return (path, counter)
+
+# ~~~~~~~~~~~~ End Something
 
 # ~~~~~~~~~~~~~~~~~~~~~~ Bird code ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # def fitnessFun(genomes, config):

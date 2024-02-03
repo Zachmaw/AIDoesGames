@@ -41,21 +41,13 @@ from environments.Dice import Pig
 
 
 
-def uniquify(path):
-    filename, extension = os.path.splitext(path)
-    counter = 0
-    while os.path.exists(path):
-        path = filename + " (" + str(counter) + ")" + extension
-        counter += 1
-    return (path, counter)
-
 def saveGenome(genes, genomeID:"tuple(int, int)", envStr:"str"):
-    with open(os.path.join(os.path.realpath(__file__), f"networks\\{envStr}\\NN{genomeID[0]}-{genomeID[1]}.txt", "w")) as f:
+    with open(os.path.join(os.path.realpath(__file__), f"networks\\{envStr}\\Gen{genomeID[0]}\\NN{genomeID[1]}.txt", "w")) as f:
         f.writelines(genes)### Sim.agents[Sim.initOrder[currentAgent?]].seed()
 def loadGenome(genomeID:"tuple(int, int)", envStr:"str"):
     '''returns a list of hexdecimal strings from a txt file'''
     genome = list()
-    with open(os.path.join(os.path.realpath(__file__), '..', f"networks\\{envStr}\\NN{genomeID[0]}-{genomeID[1]}.txt"), "r") as f:
+    with open(os.path.join(os.path.realpath(__file__), '..', f"networks\\{envStr}\\Gen{genomeID[0]}\\NN{genomeID[1]}.txt"), "r") as f:
         for line in f.readlines():
             genome.append(line.strip())
     return genome
@@ -150,7 +142,7 @@ def pickEnv():
 
 waitingPlayers = list()# le HUH?
 
-
+### Future Feature... don't worry about it for now.
 class Player:
     def __init__(self, id) -> None:
         self.ID = id
@@ -186,6 +178,9 @@ def mutateHexdec(gene:"str", radiationExposure:"float", radiationSeverity:"int")
         if roll(1000, 994, 1000 * radiationExposure):### it shouldnt loop over from 0 to 15 and vice versa. Cap it.
             gene = replace_str_index(gene, i, HEX_OPTIONS[int(gene[i], 16) + random.choice([1 + radiationSeverity, 15 + radiationSeverity]) % 16])
     return gene
+
+def normalize(intVector:"list"):### decide on a standard format.
+    pass### maybe handled by Envs? Nay, user needs raw data. find a way to handle it here...
 
 # What if the first output node( in sequence) firing means the network wants to update it's memory
 # The second and third indicate location(, but by what formatting?).
@@ -244,10 +239,10 @@ class Sim:
 
         # self.initiativeOrder.append(50, "LairAction")
     
-    def sortFunc(self, incomingAgentID:"int"):
+    def getSpeed(self, incomingAgentID:"int"):
         return self.agents[incomingAgentID].initiative# range(1,20)
     def sortInitiative(self):
-        self.initiativeOrder.sort(key=self.sortFunc, reverse=True)# initOrder = list[agentID] sorted by self.agents[agentID].initiative
+        self.initiativeOrder.sort(key=self.getSpeed, reverse=True)# initOrder = list[agentID] sorted by self.agents[agentID].initiative
     def addAgent(self, agentID:"tuple(int, int)", environmentName:"str"):### load agent from genome into player dict, giving it a temporary 'system ID'. If it gets selected for reproduction, it will recieve a new ID and be saved.
         genome = loadGenome(agentID, environmentName)
         self.agents.append(Agent(# Generate Agent, store it in list with ID as index

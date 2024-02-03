@@ -15,19 +15,24 @@
 class Env:### Neither this not it's children can accept arguments.
     '''
     All inheritors must declare the following:
-    PlayerCount: int
-    possibleActions: list[function]
-    getObservations: function
+    PlayerCount: int, 
+    possibleActions: list[function], 
+    getObservations: function, 
+    userInfo: list[str], 
+    getUserFriendlyObservations: function
     '''
+    ### if Agent is a User:
+    #       getUserFriendlyObservations()
     def __init__(self):
         self.ready = False
         self.init_order = list()
         self.thisRoundResponses = list()# to be filled to player count once an EnvChild inherits this.
         # self.gamestate = dict()
         self.PlayerCount = None
-        self.possibleActions = list()
     
     def getObservations(self):
+        pass### Error:Env not loaded
+    def getUserFriendlyObservations(self):
         pass### Error:Env not loaded
 
     def setRules(self, gameRules:"function"):
@@ -37,15 +42,15 @@ class Env:### Neither this not it's children can accept arguments.
     
     def getPlayerCount(self):
         return self.playerCount
-
+    def playerInfo(self):
+        return self.userInfo# all inheritors must declare
     def advance(self):
         ### from whose turn it is in the game, update the internal game state based on actions taken
+        # for turn based Environments:
         # everyone whose turn it is not still recieves game data
-        # but they also see it's not their turn.
-        # This function is called after all players have submitted their responses.
-        # somehow update the gameState from the response from player-whos-turn.
-        # and set new observations for... all? just active player?
-        #
+        # but they also see whos turn it is and who they are.
+
+        ### severely unsure about the below text...
         # Is it better to represent gamestate as a list of ints with variable length based on environment
         # would a list of int work?? does it have to be dict?
         # yeah, List is probably better. I can itterate over it.
@@ -54,7 +59,7 @@ class Env:### Neither this not it's children can accept arguments.
         # but dict is easier for me to understand? keywise. as opposed to indexwise.
         ### so, from gamestate, get whose turn it is
         move = self.thisRoundResponses[self.gamestate["turnTracker"]]# Sim tracks whose turn it is.
-        ### problem here is: roundOfResponses is ordered in sync with initOrder which is not the same as player order.
+        ### problem here is: roundOfResponses is ordered in sync with initOrder which is not the same as player order. how is that a problem?
         if player == 0:
             self.p1Went = True
         else:
