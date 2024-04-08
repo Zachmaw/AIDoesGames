@@ -41,10 +41,10 @@ from environments.Dice import Pig
 
 
 
-def saveGenome(genes, genomeID:"tuple(int, int)", envStr:"str"):
+def saveGenome(genes, genomeID:'tuple[int, int]', envStr:"str"):
     with open(os.path.join(os.path.realpath(__file__), f"networks\\{envStr}\\Gen{genomeID[0]}\\NN{genomeID[1]}.txt", "w")) as f:
         f.writelines(genes)### Sim.agents[Sim.initOrder[currentAgent?]].seed()
-def loadGenome(genomeID:"tuple(int, int)", envStr:"str"):
+def loadGenome(genomeID:'tuple[int, int]', envStr:"str"):
     '''returns a list of hexdecimal strings from a txt file'''
     genome = list()
     with open(os.path.join(os.path.realpath(__file__), '..', f"networks\\{envStr}\\Gen{genomeID[0]}\\NN{genomeID[1]}.txt"), "r") as f:
@@ -175,7 +175,7 @@ def hextobin(hexaString):
 def mutateHexdec(gene:"str", radiationExposure:"float", radiationSeverity:"int"):
     '''raises/lowers the value of random bonds by severity modulo 16'''
     for i in range(len(gene)):
-        if roll(1000, 994, 1000 * radiationExposure):### it shouldnt loop over from 0 to 15 and vice versa. Cap it.
+        if roll(1000, 994, 1000 * radiationExposure):### it shouldnt loop over from 0 to 15 and vice versa. Cap it.# Cap it? no looping?
             gene = replace_str_index(gene, i, HEX_OPTIONS[int(gene[i], 16) + random.choice([1 + radiationSeverity, 15 + radiationSeverity]) % 16])
     return gene
 
@@ -189,7 +189,7 @@ def normalize(intVector:"list"):### decide on a standard format.
 ##### Memory
 
 class Agent:# Recieves rewards and observations, and returns an action
-    def __init__(self, outputCount:"int"=1, geneSeq:'list[str]'=None, memory:"tuple(int, int)"=None, generation:"int"=1, radiation:"float"=0.01, toxicWaste:"float"=0.01):
+    def __init__(self, outputCount:"int"=1, geneSeq:'list[str]'=None, memory:'tuple[int, int]'=None, generation:"int"=1, radiation:"float"=0.01, toxicWaste:"float"=0.01):
         if memory:
             self.memories = list()
             for x in range(memory[0]):
@@ -243,7 +243,7 @@ class Sim:
         return self.agents[incomingAgentID].initiative# range(1,20)
     def sortInitiative(self):
         self.initiativeOrder.sort(key=self.getSpeed, reverse=True)# initOrder = list[agentID] sorted by self.agents[agentID].initiative
-    def addAgent(self, agentID:"tuple(int, int)", environmentName:"str"):### load agent from genome into player dict, giving it a temporary 'system ID'. If it gets selected for reproduction, it will recieve a new ID and be saved.
+    def addAgent(self, agentID:'tuple[int, int]', environmentName:"str"):### load agent from genome into player dict, giving it a temporary 'system ID'. If it gets selected for reproduction, it will recieve a new ID and be saved.
         genome = loadGenome(agentID, environmentName)
         self.agents.append(Agent(# Generate Agent, store it in list with ID as index
             len(self.environment.actionOptions)-1),# how many output Nodes, -1 because any NN could always idle.

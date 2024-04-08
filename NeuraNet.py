@@ -222,21 +222,22 @@ class NeuralNetwork():
 
 # MAIN BLOCK
 if __name__ == "__main__":
+    # We model a simple nn, with 3 inputs, 1 output and one random gene per 10 attempts.
+    # Remember that 'gene' = 'connection'.
+    # The first MANY generations won't even have connections to inputs.
     while True:
         try:
             generationCap = int(input("Generation number to stop at..."))
-            runsPerGeneration = int(input("Number of attepts per generation..."))
+            popsPerGeneration = int(input("Number of NNetworks per generation..."))
             break
         except:
             print("We got some Non-numbers in there, Friend.\nPlease try again.")
-    # We model a simple nn, with 3 inputs, 1 output and one random gene per 10 attempts.
-    # Intialise a single neuron neural network.
-    neuralnet = NeuralNetwork()
-    frame = neuralnet.think([0.0, 0.5, 1.0])
-    print(frame)
-    parentGenes = neuralnet.seed()
+    testNet = NeuralNetwork()
+    thought = testNet.think([0.0, 0.5, 1.0])
+    print(thought)# Should be in the form of list[bool] with len = NN.outputCount
+    parentGenes = testNet.seed()
     for i in range(generationCap):
-        for n in range(runsPerGeneration):
+        for n in range(popsPerGeneration):
             pass
             # make a NN
             neuralnet = NeuralNetwork(1, )
