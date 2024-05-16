@@ -70,13 +70,15 @@ def perceptron(node:"tuple[list[float], int, float]", activationFuncOfChoice):# 
 class NeuralNetwork():
     # For Internal Nodes, ID is the node's ID as an int key in self.internalNodes:'dict'
     # For Output Nodes, ID is merely the node's index in self.outputNodes:'list'
-    def __init__(self, outputCount:'int'=1, genes:'list[str]'=None, toxicWaste:"float"=0.01, generation:"int"=1):
+    #
+    # NeuralNetwork wants to take a Genome which has already been blasted with rads, submerge it in a toxic waste bath
+    def __init__(self, outputCount:'int'=1, parentGenome:'list[str]'=None, genomeToxicWasteBathPercentage:"float"=0.01, generation:"int"=1):
         '''
         Generation param is only needed if genes are not provided.
         '''
         ### self.costToExist = (int(), float())# cost to exist per turn
-        if genes == None:# make some genes based on generation
-            genes = init_random_Genome(ceil(generation * 0.75))# f(x)=0.75x
+        if parentGenome == None:# make some genes based on generation
+            parentGenome = init_random_Genome(ceil(generation * 0.75))# f(x)=0.75x
         self.outputNodes = list()# Shape: list(tuple(list[float(results from weight multiplications)], float(node bias)). key : list[bias,inputs]
         self.internalNeurons = dict()# internal neuron is tuple and contains workingInputs(list[float(-4,4)]), bias(int(-4,3)), and output(float(-1,1)). key : dict{ID:tuple(list[bias,inputs], state)}.
         self.layersSynapse = list()# Full decoded Connections, stacked in layers.# Shape: list[list[tuple(int, int, int, int, float)]]
@@ -90,8 +92,8 @@ class NeuralNetwork():
         workingLayerSynapses = list()
         currentLayerInputIDs = list()
         genome = list()# for every gene, make it a bitstring, mutate it, then disect it, turn it back into hexString, and store it in genome.
-        for i in range(len(genes)):# run through all the genes in the genome# Decode all the connections into tuples.# for synapse(index) in the_genome:
-            bitstring = mutateBitstring(hextobin(genes[i]), toxicWaste)
+        for i in range(len(parentGenome)):# run through all the genes in the genome# Decode all the connections into tuples.# for synapse(index) in the_genome:
+            bitstring = mutateBitstring(hextobin(parentGenome[i]), genomeToxicWasteBathPercentage)
             genome.append(binToHex(bitstring))## (Note to self: Calm down, that's why this is on it's own line..)
             decodedSynapse = (# disect it
                 int(bitstring[0]),# 0 is inputInput, 1 is internal input. 1 bit
@@ -224,7 +226,8 @@ class NeuralNetwork():
 if __name__ == "__main__":
     # We model a simple nn, with 3 inputs, 1 output and one random gene per 10 attempts.
     # Remember that 'gene' = 'connection'.
-    # The first MANY generations won't even have connections to inputs.
+    # The first MANY generations won't even *have* connections to inputs...
+    # If the initial phase is always the same, why not skip it?
     while True:
         try:
             generationCap = int(input("Generation number to stop at..."))
