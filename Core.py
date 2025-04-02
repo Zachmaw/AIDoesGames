@@ -36,7 +36,7 @@
 import pygame, os
 from NeuraNet import NeuralNetwork
 from environments.base import *
-from numpy import random
+from numpy import random, heaviside
 from environments.Dice import Pig
 
 
@@ -182,6 +182,9 @@ def mutateHexdec(gene:"str", radiationExposure:"float", radiationSeverity:"int")
 def normalize(intVector:"list"):### decide on a standard format.
     pass### maybe handled by Envs? Nay, user needs raw data. find a way to handle it here...
 
+def __binaryStep(x):
+    ''' It returns '0' is the input is less then zero otherwise it returns one '''
+    return heaviside(x,1)
 # What if the first output node( in sequence) firing means the network wants to update it's memory
 # The second and third indicate location(, but by what formatting?).
 # And the fourth output indicating what to set to.
@@ -230,15 +233,22 @@ class Sim:
         return klass()##### So, we're returning a called instance of whatever Environment we've chosen,
                             # but always without arguments...
     def __init__(self, game:'str') -> None:
-        '''Initialize an environment for this simulation'''
+        '''Initialize an environment for this simulation.\nAsk it how many players to track.\nSpawn the players.\nRun the simulation.\nRecord relevant data.\nRecord the best genomes.\nRepeat for n iterations.'''
         self.environment = self.bootEnv(game)### set to a user defined class which imports from Env
         self.playerCount = self.environment.PlayerCount
+        self.turnTracker = 0
         # self.envHistory = dict()## a place to store kept Environments by a name in str and list of settings?
         self.agents = list()# container for all Agents in the Sim
         self.initiativeOrder = list()
 
         # self.initiativeOrder.append(50, "LairAction")
     
+
+
+
+
+
+
     def getSpeed(self, incomingAgentID:"int"):
         return self.agents[incomingAgentID].initiative# range(1,20)
     def sortInitiative(self):
@@ -250,6 +260,22 @@ class Sim:
             genome)
         self.initiativeOrder.append(len(self.agents))# Put the AgentID in the initiative order list
         
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -293,10 +319,22 @@ class Sim:
         ### are you suggesting that actions passed in here is
         # a list of ALL Agent actions this initiative round??
         # one action per initiative step, eh?
+        # one action per player per timestep vs 
  
 
+    def turnResetCheck(self):
+        # wait...?
+        # turnTracker = turnTracker + 1 % len(self.agents)
+        pass###
 
-
+###
+    def thing(self, mult:"float"):## have this threshold start low and increase infinitely ever closer to 0.95(or maybe even .98, but I wouldnt go higher...) as generation count increases.
+        g = list()
+        val = 0.5*mult
+        finalLayer = self.agents[self.whosTurn()].think()
+        for i in finalLayer:# for i in the output vector of floats from 0 to 1...
+            g.append(__binaryStep(i - val + 1))
+        return g
 
 
 
