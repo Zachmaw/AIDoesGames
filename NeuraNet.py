@@ -1,30 +1,18 @@
 # IMPORTS
 from numpy import random, exp, exp2, tanh, sin, array#, heaviside, dot, transpose
 from math import ceil
+from commonFuncs import diceRoll, hextobin
 ### import timeit
 
 # CONSTANTS INIT
 HEX_OPTIONS = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"]
-BIASES = list()
-for i in range(16):# could only get -8 to +7, but that's fine because a bias of +8 means that neuron fires(with max power) no matter what.
-    BIASES.append(i - 8)
+BIASES = list(i-8 for i in range(16))# could only get -8 to +7, but that's fine because a bias of +8 means that neuron fires(with max power) no matter what.
 
 # SETTINGS INIT# future features to be marked with ###
 # FUNCTIONS
+### Rework in progress: Mutation feature.
 def binToHex(binaryString):
     return hex(int(binaryString, 2))
-def hextobin(hexaString):
-  return bin(int(hexaString, 16))[2:].zfill(len(hexaString) * 4)
-def diceRoll(d, dc, bonus):
-    r = random.randint(1, d+1)
-    if r == d:# if critical roll
-        return True
-    if r == 1:# if natural 1
-        return False
-    if dc <= r + bonus:
-        return True
-    else:
-        return False
 def randomOneGene():
     gene = list()
     for i in range(9):
@@ -197,16 +185,16 @@ class NeuralNetwork():
             self.connCalc(conn, inputVec[conn[1]])
     def think(self, inputVector:'list[int]'):# forward pass # The neural network thinks.
         '''return list[float(0,1)]\nInputs list[int(0,1)]'''# I need to produce an output vector from the whole network.
-        thing = int()
+        didOneLayerEarly = int()
         if len(self.brain[0]) == len(self.brain[1])+1:# if extra synLayer
             self.calcConnLayer(self.brain[0][0], inputVector)
-            thing += 1
+            didOneLayerEarly += 1
         if not len(self.brain[0]) == len(self.brain[1]):# if they're anything but even
             raise Exception("It very broke.")
         else:# but they're exactly even.
             for layerIndex in range(len(self.brain[1])):
                 self.proccessInternalNodeLayer(self.brain[1][layerIndex])
-                self.calcConnLayer(self.brain[0][layerIndex + thing])
+                self.calcConnLayer(self.brain[0][layerIndex + didOneLayerEarly])
         return self.proccessFinalNodeLayer()# run final output node layer
     def seed(self):### does a txt file being read in show line breaks? Requires testing...
         '''returns a genome ready to have speed appended to the front of each gene'''
@@ -320,12 +308,13 @@ if __name__ == "__main__":
 
 
 
+### mutation prefference settings. synapse vs neuron.
+### cost.
+
 
 # We are decoding the genes as weights and storing them in layers based on their I/O targets.
-            # you find out how many connections you have to output nodes, placing those in the final layer of the synapse structure first, setting the rest aside for now.
+    # you find out how many connections you have to output nodes, placing those in the final layer of the synapse structure first, setting the rest aside for now.
 
-
-# note walkthrough...
 
 # class NN
     # init function

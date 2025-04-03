@@ -35,10 +35,14 @@
 
 import pygame, os
 from NeuraNet import NeuralNetwork
+# Init takes a bunch of stuff and  # def __init__(self, outputCount:'int'=1, parentGenome:'list[str]'=None, genomeToxicWasteBathPercentage:"float"=0.01, generation:"int"=1):
+# Returns the prepared NN object.
+# Think takes an inputVector and
+# Returns list[float(0,1)] with len(outputCount from init).
 from environments.base import *
 from numpy import random, heaviside
 from environments.Dice import Pig
-
+from commonFuncs import diceRoll
 
 
 def saveGenome(genes, genomeID:'tuple[int, int]', envStr:"str"):
@@ -74,7 +78,7 @@ def fetchBonus(funcOut:"float"):
         return 1
     else:
         return 2
-def decodeSpeed(speedGene:"str"):
+def decodeInitiativeGene(speedGene:"str"):
     '''Takes the hexStr in from speed gene.
     Decode it to a list of numbers.
     Get bonus from list length.
@@ -97,7 +101,6 @@ def decodeSpeed(speedGene:"str"):
 
 
 
-
 EnvList = {
     'pig': Pig,
     'dice': Pig
@@ -105,8 +108,6 @@ EnvList = {
 validEnvNames = EnvList.keys()
 # list_of_environments = dict(some=SomeClass,
 #                      other=OtherClass)
-
-
 
 def pickEnv():
     trying = True
@@ -117,7 +118,7 @@ def pickEnv():
                 print("A descision, made...\n\n")
                 trying = False
         except:
-            print("That's not a valid entry at the moment.\nSorry if you believe this to be in error.\n\n\n\n\nbut it's not.\n}:)")
+            print("That's not a valid entry at the moment.\nSorry if you believe this to be in error.\n\n\n\n\nbut it's not.   }:)")
     return choice
 
 
@@ -129,7 +130,6 @@ def pickEnv():
 # various point values, yes like...
 # table score/the pot, ez
 # all players total scores, list with length(all players)
-
 
 
 
@@ -160,36 +160,26 @@ HEX_OPTIONS = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", 
 def replace_str_index(text, index=0, replacement=''):
     return f'{text[:index]}{replacement}{text[index+1:]}'
 
-def roll(d, dc, bonus):
-    r = random.randint(1, d+1)
-    if r == d:# if critical roll
-        return True
-    if r == 1:# if natural 1
-        return False
-    if dc <= r + bonus:
-        return True
-    else:
-        return False
-def hextobin(hexaString):
-  return bin(int(hexaString, 16))[2:].zfill(len(hexaString) * 4)
 def mutateHexdec(gene:"str", radiationExposure:"float", radiationSeverity:"int"):
     '''raises/lowers the value of random bonds by severity modulo 16'''
     for i in range(len(gene)):
-        if roll(1000, 994, 1000 * radiationExposure):### it shouldnt loop over from 0 to 15 and vice versa. Cap it.# Cap it? no looping?
+        if diceRoll(1000, 994, 1000 * radiationExposure):### it shouldnt loop over from 0 to 15 and vice versa. Cap it.# Cap it? no looping? Why shouldn't it?
             gene = replace_str_index(gene, i, HEX_OPTIONS[int(gene[i], 16) + random.choice([1 + radiationSeverity, 15 + radiationSeverity]) % 16])
     return gene
 
-def normalize(intVector:"list"):### decide on a standard format.
-    pass### maybe handled by Envs? Nay, user needs raw data. find a way to handle it here...
+# def normalize(intVector:"list"):### decide on a standard format.
+    # pass# maybe handled by Envs? Nay, user needs raw data. find a way to handle it here...
+    # that's kinda unfair. We should give any user the same normalized inputs we would give the CPU.
+    ### Each env should handle their own normalizations.
 
 def __binaryStep(x):
     ''' It returns '0' is the input is less then zero otherwise it returns one '''
     return heaviside(x,1)
-# What if the first output node( in sequence) firing means the network wants to update it's memory
-# The second and third indicate location(, but by what formatting?).
+# What if the first output node( in a set sequence) firing means the network wants to update it's memory
+# The second and third indicate 2d location(, but by what formatting?).
 # And the fourth output indicating what to set to.
 # As for location formatting... From two independent floats to a point on a 2D grid?
-##### Memory
+### Memory
 
 class Agent:# Recieves rewards and observations, and returns an action
     def __init__(self, outputCount:"int"=1, geneSeq:'list[str]'=None, memory:'tuple[int, int]'=None, generation:"int"=1, radiation:"float"=0.01, toxicWaste:"float"=0.01):
@@ -201,14 +191,14 @@ class Agent:# Recieves rewards and observations, and returns an action
                     self.memories[x] += "0"
         if geneSeq:# Build a NN from a Genome to handle the object.
             cleanGenes = list()
-            self.speedGene = list()
+            initiativeGene = list()
             for i in range(len(geneSeq)):# extract speed
                 temp = mutateHexdec(geneSeq[i], radiation, 0)## something to play with
-                self.speedGene.append(temp[0])
+                initiativeGene.append(temp[0])
                 cleanGenes.append(temp[1:])
             del temp
             self.nn = NeuralNetwork(outputCount, cleanGenes, toxicWaste, generation)
-            self.initiative = decodeSpeed("".join(self.speedGene))
+            self.initiative = decodeInitiativeGene("".join(initiativeGene))
 
         else:### No genome given, Check if any humans are waiting to play
             if not len(waitingPlayers):# if no players waiting, proceed
@@ -222,7 +212,7 @@ class Agent:# Recieves rewards and observations, and returns an action
         base = self.nn.seed()
         temp = list()
         for i in range(base):
-            temp.append(f'\\n{self.speedGene[i]}{base[i]}')
+            temp.append(f'\\n{initiativeGene[i]}{base[i]}')
         return temp
 
 
@@ -242,12 +232,6 @@ class Sim:
         self.initiativeOrder = list()
 
         # self.initiativeOrder.append(50, "LairAction")
-    
-
-
-
-
-
 
     def getSpeed(self, incomingAgentID:"int"):
         return self.agents[incomingAgentID].initiative# range(1,20)
@@ -344,11 +328,6 @@ class Sim:
 # The Agent responds with an int representing it's selection.###
 # update Env internal state with selected action from specified Agent.###
 # Sim expects back an updated set of observations.###
- 
-
-
-
-
 
 # ______________________________________________________________________________________
 
