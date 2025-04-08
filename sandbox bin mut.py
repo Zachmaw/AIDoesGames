@@ -17,3 +17,11 @@
 # for i in range(7):
 #     s += str(i)
 # print(s)
+
+
+def wstr2f(text: str, filename: str):
+    with open(filename, 'a') as file:
+        file.write(text + '\n')
+
+filename = "log.txt"
+wstr2f("Testing...", filename)

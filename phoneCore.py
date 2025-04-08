@@ -13,7 +13,7 @@
         # whiteboard
         # the Agent selects the action(s) to take
         # which is returned
-            # on the first step in the Env, Agent recieves empty inputs.
+            # on the first step in the Env, Agent recieves empty inputs as no actions have yet been taken? Why can't shit just depend on the env...
         # 
         
         
@@ -101,7 +101,7 @@ class Sim:
         # modify its own internal state.
  
  
-    def addAgent(self, agentID:"tuple(int, int)", environmentString:"str"):### load agent from genome into player dict, giving it a temporary 'system ID'. If it gets selected for reproduction, it will recieve a new ID and be saved.
+    def addAgent(self, agentID:'tuple(int, int)', environmentString:"str"):### load agent from genome into player dict, giving it a temporary 'system ID'. If it gets selected for reproduction, it will recieve a new ID and be saved.
         genome = loadGenome(agentID, environmentString)
         
  

@@ -182,23 +182,23 @@ def __binaryStep(x):
 ### Memory
 
 class Agent:# Recieves rewards and observations, and returns an action
-    def __init__(self, outputCount:"int"=1, geneSeq:'list[str]'=None, memory:'tuple[int, int]'=None, generation:"int"=1, radiation:"float"=0.01, toxicWaste:"float"=0.01):
+    def __init__(self, outputCount:"int"=1, parentGenome:'list[str]'=None, memory:'tuple[int, int]'=None, generation:"int"=1, radiation:"float"=0.01, toxicWaste:"float"=0.01):
         if memory:
             self.memories = list()
             for x in range(memory[0]):
                 self.memories.append(str())
                 for y in range(memory[1]):
                     self.memories[x] += "0"
-        if geneSeq:# Build a NN from a Genome to handle the object.
+        if parentGenome:# Build a NN from a Genome to handle the object.
             cleanGenes = list()
             initiativeGene = list()
-            for i in range(len(geneSeq)):# extract speed
-                temp = mutateHexdec(geneSeq[i], radiation, 0)## something to play with
+            for i in range(len(parentGenome)):# extract speed
+                temp = mutateHexdec(parentGenome[i], radiation, 0)### mutation shenanagins
                 initiativeGene.append(temp[0])
                 cleanGenes.append(temp[1:])
             del temp
             self.nn = NeuralNetwork(outputCount, cleanGenes, toxicWaste, generation)
-            self.initiative = decodeInitiativeGene("".join(initiativeGene))
+            self.initiative = decodeInitiativeGene(initiativeGene)
 
         else:### No genome given, Check if any humans are waiting to play
             if not len(waitingPlayers):# if no players waiting, proceed
@@ -208,11 +208,11 @@ class Agent:# Recieves rewards and observations, and returns an action
             pass### Make the object recieve input from input devices( wait on the User)
             # *This* Agent is a Player instead of a NN
 
-    def seed(self):
+    def seed(self):### aw HELL Naw
         base = self.nn.seed()
         temp = list()
         for i in range(base):
-            temp.append(f'\\n{initiativeGene[i]}{base[i]}')
+            temp.append(f'\\n{self.initiative[i]}{base[i]}')
         return temp
 
 

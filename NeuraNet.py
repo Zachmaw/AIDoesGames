@@ -23,23 +23,7 @@ def init_random_Genome(geneCount:"int"):
     for i in range(geneCount):
         genome.append(randomOneGene())
     return genome# a list of hexdec strings( each with len(9))
-def generateMutationBitstring(geneLen:"int", toxicWasteBonus:"float"):
-    '''Default odds: 8/1000\nA float of 1.0 should cause mutation chance to be 999/1000,\n
-    But only because a Nat 1 is still a possibility.'''
-    temp = list()
-    for i in range(geneLen):
-        if diceRoll(1000, 993, 1000 * toxicWasteBonus):
-            temp.append("1")
-        else:
-            temp.append("0")
-    return "".join(temp)
-def bitCombine(argA:"str", argB:"str"):# overlay mutation bitstring with gene bitstring
-    temp = list()
-    for i in range(len(argA)):
-        temp.append(str((int(argA[i]) + int(argB[i])) % 2))
-    return "".join(temp)
-def mutateBitstring(bitstring:"str", bonus):
-    return bitCombine(bitstring, generateMutationBitstring(36, bonus))## 36??? Yes, 36.
+
 def perceptron(node:"tuple[list[float], int, float]", activationFuncOfChoice):# AKA, it shouldn't have an ID by this point. No lookups. Shape : dict{ID:tuple(list[bias,input,...], state)}.
     '''Returns the node you pass in, but "cleaned" in a way. Reset to a usable state, while also holding this result.'''
     tempN = float()# add up the
@@ -48,11 +32,7 @@ def perceptron(node:"tuple[list[float], int, float]", activationFuncOfChoice):# 
     tempN += node[1]# add bias
     result = activationFuncOfChoice(tempN + node[1])# the result of a node is a float no matter what, internal(-1,1), output(0,1). But then we will binary the output nodes.
     return (list(), node[1], result)
-def funcSine(generation):# f(x)=mx+A\sin(Bx) m=0.7, A=8, B=0.35 ### setting
-    m = 0.7
-    A = 8
-    B = 0.35
-    return m*generation+A*sin(B*generation)
+
 
 # CLASSES
 class NeuralNetwork():
@@ -96,7 +76,7 @@ class NeuralNetwork():
         workingLayer = list()# Synapses
         self.genome = list()# for every gene, make it a bitstring, mutate it, then turn it back into hexString and store it in genome.
         for i in range(len(parentGenome)):# Decode all the connections into tuples.# for synapse(index) in parent_genome:
-            bitstring = mutateBitstring(hextobin(parentGenome[i]), genomeToxicWasteBathPercentage)# mutation
+            bitstring = hextobin(parentGenome[i]), genomeToxicWasteBathPercentage### mutation happens outside NN!
             self.genome.append(binToHex(bitstring))## Save it back to genome. (Note to self: Calm down, that's why this is on it's own line..)
             decodedSynapse = (# disect current gene
                 int(bitstring[0]),# input type. 0 is inputInput, 1 is internal input. 1 bit(0,1)
@@ -104,7 +84,7 @@ class NeuralNetwork():
                 int(bitstring[8]),# output type. 0 is output, 1 is internal. 1 bit(0,1)
                 int(bitstring[9:16], 2),# output destination ID. 7 bits(0,127)
                 int((int(bitstring[16:32], 2)+1) / 6555)-4,# weight value. 16 bits(0,65535)
-                BIASES[int(bitstring[32:], 2)]# Bias as int representing an index in the list of preset biases. # 4 bits to work with gives me a usable range of 0 to 15, which I map to -8 to +7.
+                BIASES[int(bitstring[32:36], 2)]# Bias as int representing an index in the list of preset biases. # 4 bits to work with gives me a usable range of 0 to 15, which I map to -8 to +7.
                 )
             if decodedSynapse[2]:# if the output type( from this gene) is internal, wait to see if we even need this synapse.
                 backBurner.append(decodedSynapse)
@@ -131,12 +111,18 @@ class NeuralNetwork():
                     workingLayer.append(conn)# it is part of the next layer.
                     if conn[0]:# if the referenced Node is internal, create it.
                         if not self.generateNode(conn):# if it already exists, promote it.
+                            found = False
                             for layer in range(len(self.brain[1])):
+                                if found:
+                                    break
                                 for nodeID in range(layer):
-                                    if self.brain[1][layer][nodeID] == conn[1]:
+                                    if found:
+                                        break
+                                    if self.brain[1][layer][nodeID] == conn[1]:# This Conn source ID is internal, but is also in a deeper computation layer.
                                         self.brain[1][layer].remove(conn[1])
+                                        found = True
                         if not any(conn[1] == nodeId for nodeId in inNodeIDsSC):# if the referenced node isn't already,
-                            inNodeIDsSC.append(conn[1])# add all internal Node IDs for the next layer to the shopping cart.
+                            inNodeIDsSC.append(conn[1])# add internal Node IDs for the next layer to the shopping cart.
             if workingLayer:
                 self.brain[0].append(workingLayer)
             else:# no Synapses joined to the previous Neuron layer...
@@ -152,7 +138,7 @@ class NeuralNetwork():
     def generateNode(self, para):
         '''Returns True if the Node was successfully Generated\nand False if it already exists.'''
         if not any(para[1] == nodeId for nodeId in self.internalNodes.keys()):# if that Node ID already exists, skip building it.
-            self.internalNodes[para[1]] = (list(), para[5], float())# generate internal node. Shape: ID = tuple( list[weighted values], bias, state)
+            self.internalNodes[para[1]] = (list(), para[5], float())# generate internal node from Conn source ID. Shape: ID = tuple( list[weighted values], bias, state)
             return True
         else:
             return False    
