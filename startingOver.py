@@ -1,21 +1,6 @@
 ### new mutation algorythm(s?)
 
 
-### mutation parameters
-# percentage of gene
-# percentage of genome
-# whether or not to delete/generate a gene
-    # if yes, which?
-    # and then if delete,
-        # which gene?
-
-
-
- 
-# on an Agents initiative, 
-# we pass to the Agent the current observations
-# which we get from the Env.perspective method
-
 
 
 
@@ -71,9 +56,11 @@
 # import timeit
 # import matplotlib.pyplot as plt
 # import numpy as np
-from numpy.random import choice, sample, randint
+from random import choices
+from numpy.random import choice, randint
+from numpy import linspace, cumsum
 from commonFuncs import diceRoll
-from math import ceil, exp, e, sin
+from math import exp, e, sin, pi
 import os
 
 
@@ -85,48 +72,14 @@ import os
 
 
 
-broCantType = True
-while broCantType:
-    try:
-        geneLen = int(input("How many bits: "))
-        geneCount = int(input("How many mutation iterations: "))
-        broCantType = False
-    except:
-        print("Please, use numbers only.\nAnd NOT in word form...")
-bstring = list()# generate bitstring with that length
-for i in range(geneLen):
-    bstring.append(str(randint(0, 2)))
-thingy = bstring
-print("".join(thingy))
-for i in range(geneCount):# print that many variations of the first string with only one random bit flipped each
-    second = list()
-    whichBits = randint(0, geneLen)
-    for i in range(geneLen):
-        if not i in whichBits:
-            second.append("0")
-        else:
-            second.append("1")
-    print(thingy ^ "".join(second))
 
-
-
-
-
-
-
-
-
-
-def make_filename(funcContext: list[str], param1: int, param2: int):### context = [funcName, param1Name, param2Name]
-    folder = os.path.join("cached_data", funcContext)
-    os.makedirs(folder, exist_ok=True)### constrain funcContext short and keep params numeric and padded to 4 deca-bits.
-    return os.path.join(folder, f"{funcContext[0]}_{funcContext[1]}-{param1}_{funcContext[2]}-{param2}.txt")
+################ FILE FUNCS
+def get_filename(funcContext: list[str], params: list[int]):### context = [funcName, param1Name, param2Name]
+    folder = os.path.join("lookupTables", funcContext)
+    os.makedirs(folder, exist_ok=True)### constrain funcContext short and keep params numeric and padded to 4 places
+    return os.path.join(folder, f"{funcContext[0]}_{funcContext[1]}-{params[0]}_{funcContext[2]}-{params[1]}.txt")# file name format. name_data1-nums_data2-nums.txt
 # def get_filename(func_name: str, peak: int, max_len: int = 150):
 #     return f"{func_name}_peak{peak}_len{max_len}.txt"
-
-
-
-
 
 def rename_file(old_name: str, new_name: str):
     if os.path.exists(old_name):
@@ -146,26 +99,12 @@ def readFile(filename: str, dataType):
     except:
         return False
 
-def getFromBonusTable(peak: int, max_len: int = 150):
-    filename = make_filename(peak, max_len)
-    return generate_fetch_bonus_table(peak, max_len)
 
 
 
 
 
-def newFetchBonus(geneLen: int, initiativeGeneCountPeak=25, max_len=150):
-    values = getFromBonusTable(initiativeGeneCountPeak, max_len)
-    return values[geneLen] if geneLen < len(values) else values[-1]
-
-
-
-
-
-
-
-
-
+############### INITIATIVE RELATED FUNCS
 
 def decodeSpeed(hexdecSpeedGene:"str"):
     '''Alrighty... How do I want to do this?
@@ -190,31 +129,6 @@ def decodeSpeed(hexdecSpeedGene:"str"):
     
     pass
 
-
-def generate_fetch_bonus_table(peak: int, max_len: int = 150):# pregenerate the lookup table for the simulation's given generation-based initialized genome peak.
-    values = [round(((e/peak) * x * exp(-x/peak) * 6) - 3) for x in range(max_len)]## max_len is an index type of value.
-    filename = make_filename(peak, max_len)
-    with open(filename, 'w') as f:
-        for val in values:
-            f.write(str(val) + '\n')
-    return values
-
-def newFetchBonus(geneLen:"int", initiativeGeneCountPeak=25):
-    
-
-    ### I want to preload math. Which means we populate a list with 150 of whatever the answer is for a given peak value.
-    # use txt files to save data. Use functions to set and reset the name to be the settings so I can load the data using the filename.
-    # SETTINGS:
-    # range to generate
-    # peak value to use
-
-
-    # what I have so far.
-    return round(((e/initiativeGeneCountPeak) * geneLen * exp(-geneLen/initiativeGeneCountPeak) * 6) - 3)
-
-
-
-
 def decodeInitiativeGene(speedGene:"list"):
     '''Takes the hexStr in after it's been gathered from the entire genome.
     Decode it to a list of numbers.
@@ -224,7 +138,7 @@ def decodeInitiativeGene(speedGene:"list"):
     return the total initiative value.'''
     geneCount = len(speedGene)
     if not geneCount:# empty list. Genome had no genes to pull data from.
-        return 1# default initiative score. Perfect balance.
+        return 1# default initiative score. Perfect balance.### wouldn't that be 0?
     allValues = list()
     for hexdecChar in speedGene:
         allValues.append(int(hexdecChar, 16))
@@ -232,126 +146,125 @@ def decodeInitiativeGene(speedGene:"list"):
     bonusInit = newFetchBonus(geneCount)
     return (sum(allValues) / geneCount) + bonusInit
 
+
+
+def generate_fetch_bonus_table(peak: int, max_len: int = 150):# pregenerate the lookup table for the simulation's given generation-based initialized genome peak.
+    values = [round(((e/peak) * x * exp(-x/peak) * 6) - 3) for x in range(max_len)]## max_len is an index type of value.
+    filename = get_filename(peak, max_len)
+    with open(filename, 'w') as f:
+        for val in values:
+            f.write(str(val) + '\n')
+    return values
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  
-############ GPT
+############ GPT AND MUTATION
 
-def flipChance(value):
-    """Assumes input is a float between 0 and 1"""
-    scaled = value * 100
-    flipped = 1000 - scaled
-    return flipped
 
-def mutate_gene_custom(gene: str, remainingMutations: int) -> str:
-    gene_list = list(int(gene, 16))
 
-    paramMutOdds = [
-        0.05,  # source_type
-        0.1,  # source_ID
-        0.05,  # sink_type
-        0.1,  # sink_ID
-        0.6,  # weight x4 ### That's a lot of mutation chance. Make 0.7 the max for weights.
-        0.02,  # sourceNodeBias
-        0.08   # initiativeGene
-    ]# mult by 100 and subtract from 1000, methinks.
+# what am I trying to do?
+# based on generation count and a sine wave,
+# apply a scalar to the entire list of base_odds,
+# not just passing in the one we need.
+# The scalar is derived from the sine func.
+# THEN generate a random int from 0 to 9
+# but with odds adjusted based on the scaled_odds.
+
+
+paramMutOdds = [
+    0.05,  # source_type
+    0.1,  # source_ID
+    0.05,  # sink_type
+    0.1,  # sink_ID
+    0.05, 0.2, 0.05, 0.2,# weight x4 
+    0.05,  # sourceNodeBias
+    0.15   # initiativeGene
+]# Represents odds compared to each other that a given nibble is selected for the distributed mutation
+# I want these odds to shift with generation count according to a sine wave.
+# even inicies shift up while odd indicies shift down.
+
+
+
+
+
+
+def mutateOneGene(gene, num_mutations, mutOdds):
     gene_list = list(gene)
-    while remainingMutations:
+    while num_mutations > 0:
         for i in range(len(gene_list)):
-            if random() < paramMutOdds[i]:### make a bell or gamma or something function of x.
-                # The mutation is applied to a nibble based on it's bounds within y.
-                # Include a sine wave to make it so nibble_odds shift back and forth based on generation count.
-                
-
+            if random() < mutOdds[i]:
                 gene_list[i] = str((int(gene_list[i], 16) + choice([-1, 1])) % 16)
-                remainingMutations -= 1
+                num_mutations -= 1
+                if num_mutations == 0:
+                    break
     return ''.join(gene_list)
 
-def mutate_genome(parentGenome: list[str], mutRation: float, addRemoveGeneDifficulty: float, addRemovePreference: float) -> list[str]:### mutRation represents the percentage of nibbles in the genome to be mutated.
-    '''returns the passed genome\nmutated by mutRation * 10'''### I need to be able to force a 100% mutation to a genome.
-    indices_to_mutate = round(10 * len(parentGenome) * mutRation)# odds for coin dolage is based on calculated ratio from genome length and mutRation.
-    new_genome = list()
-    genomeMutPlan = list()# of ints with length number_of_genes_to_be_mutated
-    genesDeling = list()# of indices of the genes we plan to delete.
-    genesAdding = int()# how many fresh random genes to generate at the end.
-    while indices_to_mutate:
-        for i in range(len(parentGenome)):### if indicies_to_mutate/10 >= addRemoveGeneDifficulty: Roll to addRemove then if True: again to see if add or remove.
-            if not i:### first iteration. Is there a faster way? or is the cost to check negligible?
-                genomeMutPlan.append(int)
-            if diceRoll(20, 16, 2):# roll to see if this gene gets selected to recieve a mutation point.
-                indices_to_mutate -= 1
-                genomeMutPlan[i] += 1
+def mutateOneGene(gene: str, num_mutations: int, genCount: int) -> str:
+    gene_list = list(gene)
 
-    for i in range(len(genomeMutPlan)):
-        if genomeMutPlan[i]:
-            ### if there are enough points to cross the threshhold, we spin the wheel to see if we delete this gene.
-            if diceRoll(100, 51, 100-round(100*addRemoveGeneDifficulty)):
-                if diceRoll(100, 1, round(100*addRemovePreference)):
-                    genesAdding += 1### or just generate the gene?
-                else:
-                    # this one's going byebye, don't bother mutating. log it's index for deletion
-                    genesDeling.append(i-len(genesDeling))# so when deleting, I can just go in order, right?
-                    new_genome.append(parentGenome[i])### or can I just not add it to new_genome?
-            else:# not adding or removing a gene, just mutating it.
-                new_genome.append(mutate_gene_custom(parentGenome[i], genomeMutPlan[i]))# THEN take each gene, send it to the mutator with a random number of mutation coins up to len(gene).
-        else:# no mutations allowed for the given gene
-            new_genome.append(parentGenome[i])
+    # Modulate odds with generation-based scalar
+    scalar_LTable = get_or_generate(modulate_param_mut_odds, ["mutOdds", ], [current_scalar]), 15, 1.5)# paramMutOdds = get_or_generate(modulate_param_mut_odds, ["paramMutOdds"], [current_scalar])
 
-    for igene in genesDeling:
-        del new_genome[igene]
-    for i in range(genesAdding):
-        new_genome.append(randomOneGene())
+    # scalar = get_param_mut_scalars(generation)
+    mutMutOdds = [min(1.0, chances * scalar_LTable[genCount]) for chances in paramMutOdds]
+    indexes = choices(len(paramMutOdds), paramMutOdds, k=num_mutations)
+    ### make a sine function of generation.
+    for i in range(len(indexes)):
+        if randint() < mutMutOdds[i]:
+            gene_list[i] = str((int(gene_list[i], 16) + choice([-1, 1])) % 16)
+            num_mutations -= 1
+            # if not howMuch:
+            break
 
-    return new_genome
+    return ''.join(gene_list)
+
+
+
+                # The mutation is applied to a nibble based on it's bounds within y.
+                # Include a sine wave to make it so nibble_odds shift back and forth based on generation count.
 
 
 
 
-# max = gene count * 10
-# mutRation is not chance of mutation, it's ratio thereof.
-# mutRation * 100 = % of max to randomly select.
-# we need to know exactly how many nibbles we're adjusting
-# so we can decrement a running total.
 
 
 
-def funcSine(generation):# f(x)=mx+A\sin(Bx) m=0.7, A=8, B=0.35 ### setting, What is y? mutationCount? something else?
-    m = 0.7
-    A = 8
-    B = 0.35
-    return m*generation+A*sin(B*generation)
-def bitCombine(argA:"str", argB:"str"):# overlay mutation bitstring with gene bitstring
-    temp = list()
-    for i in range(len(argA)):
-        temp.append(str((int(argA[i]) + int(argB[i])) % 2))
-    return "".join(temp)
-def binToHex(binaryString):
-    return hex(int(binaryString, 2))
-def randomOneGene():
-    gene = list()
-    for i in range(9):# speed's not random
-        gene.append(int(choice(range(16)), 16))
-    gene.append(int(randint(5, 12), 16))
-    return "".join(gene)
-def init_random_Genome(geneCount:"int"):
-    genome = list()
-    for i in range(geneCount):
-        genome.append(randomOneGene())
-    return genome# a list of hexdec strings( each with len(10))
-# def mutateBitstring(bitstring:"str", bonus):
-#     return bitCombine(bitstring, generateMutationBitstring(36, bonus))## 36??? Yes, 36.
+
+
+
+
+### np.sin(np.cumsum(1 + 0.5 * np.sin(x)) * (x[1] - x[0]))# accumulate frequency shift. my special line
+
+
+
 
 
 
 
 #####
 #####
-temp = mutate_genome(parentGenome, radiation, newGeneChance)### mutation shenanagins
+new_genome.append(mutateOneGene(parentGenome[i], genomeMutPlan[i], ))### THEN take each gene, send it to the mutator with it's number of mutation coins up to len(gene).
+# temp = mutate_genome(parentGenome, radiation, addRemovePreference, addRemoveGeneBias)### mutation shenanagins (parentGenome: list[str], radiation:, addRemovePreference)
 #####
 ##### ### Find out how harsh of radiation to apply based on return from mutation/generation sine function 
 
 
 
 
-### every ten generations, 80% of the population should be cross-breeds of leading genomes
+### every f generations, 80% of the population should be cross-breeds of leading genomes
 
 # What am I really trying to do?
 # when the Sim is generating a population, it does so one NN at a time.
@@ -385,14 +298,153 @@ temp = mutate_genome(parentGenome, radiation, newGeneChance)### mutation shenana
 
 
 filename = "log.txt"
-write2file("Testing...", filename)
+write2file(filename, "Testing...")
 
 
 
 
 
-make_filename("fetchBonus", 25, 150)
+get_filename("fetchBonus", 25, 150)
 # → 'fetchBonus_p1-25_p2-150.txt'
 
-make_filename("mutationOdds", 200, 16)### but we need to know 3 things. Which segments mutation odds, how big the batch, and x( which is?).
+get_filename("mutationOdds", 200, 16)### but we need to know 3 things. Which segments mutation odds, how big the batch, and x( which is?).
 # → 'mutationOdds_p1-200_p2-16.txt'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def get_or_generate(usedFunction: function, function_context: list[str], params: list[int]) -> list[float]:
+    filename = get_filename(function_context, params)
+    if os.path.exists(filename):# print(f"Loading data from {filename}")
+        return readFile(filename)
+    else:# print(f"Generating new data for {filename}")
+        data = usedFunction(params)
+        write2file(filename, data)
+        return data
+
+
+
+
+mod_scalar = get_mod_scalar(generation_count)
+paramMutOdds = get_or_generate(modulate_param_mut_odds, ["paramMutOdds"], [round(mod_scalar, 3)])
+
+
+
+# I just want to know, based on current generation, how should the mutOdds be scaled
+def get_param_mut_scalars(genCount: int):
+    """
+    Returns a list of scaling factors for parameter mutation odds based on generation count.
+    A sine-wave-based modulation bumps mutation odds every 15 generations.
+    """
+    # Rescale x to make high peaks 15 generations apart (period = 30)
+    x = linspace(genCount - 1, genCount, 1000)
+    freq_wave = 1 + 0.5 * sin(2 * pi * x / 30)  # period = 30 gens### plot that, make sure I don't need to chop that.
+    phase = cumsum(freq_wave) * (x[1] - x[0])
+    y = sin(phase)[-1]  # get latest value
+    scalar = (y + 1) / 2  # normalize [-1, 1] → [0, 1]
+    return scalar
+
+def modulate_param_mut_odds(params):# generate a modulated odds list based on params
+
+    base_odds = [0.05, 0.1, 0.05, 0.1, 0.05, 0.2, 0.05, 0.2, 0.05, 0.15]### make settings-able
+    mod_scalar = params[0]  # assume params[0] is your mod scalar [0, 1]
+    modulated = [
+        val * (0.5 + mod_scalar * 0.5) if i % 2 == 0
+        else val * (1 - mod_scalar * 0.5)
+        for i, val in enumerate(base_odds)
+    ]
+    return modulated
+
+def modulate_param_mut_odds(params):
+    generation_scalar = params[0]
+    base_odds = [0.05, 0.1, 0.05, 0.1, 0.05, 0.2, 0.05, 0.2, 0.05, 0.15]
+    
+    modulated = [
+        val * (0.5 + generation_scalar * 0.5) if i % 2 == 0
+        else val * (1 - generation_scalar * 0.5)
+        for i, val in enumerate(base_odds)
+    ]
+    return modulated
+
+
+
+
+
+def genGenesPerGentin(generation: int, rate: float =0.7):# f(x)=mx+A\sin(Bx) m=0.7, A=8, B=0.35 ### setting, What is y? mutationCount? something else?
+    frequency = 8
+    amp = 0.35
+    return rate*generation+frequency*sin(amp*generation)
+
+
+
+
+
+def doubleSine(generationsPerHalfCycle: int):
+    sin(cumsum(1 + 0.5 * sin(genCount)) * (genCount[1] - genCount[0]))# accumulate frequency shift# my special red line
+
+
+    wave = (sin(gen * frequency) + 1) / 2  # scales to [0, 1]
+
+
+
+
+# def getFromBonusTable(peak: int, max_len: int = 150):
+#     filename = make_filename(peak, max_len)
+#     return generate_fetch_bonus_table(peak, max_len)
+
+
+
+def newFetchBonus(geneLen: int, initiativeGeneCountPeak=25, max_len=150):
+    values = getFromBonusTable(initiativeGeneCountPeak, max_len)
+    return values[geneLen] if geneLen < len(values) else values[-1]
+
+
+def newFetchBonus(geneLen:"int", initiativeGeneCountPeak=25):
+    ### I want to preload math. Which means we populate a list with 150 of whatever the answer is for a given peak value.
+    # use txt files to save data. Use functions to set and reset the name to be the settings so I can load the data using the filename.
+    # SETTINGS:
+    # range to generate
+    # peak value to use
+
+
+    # what I have so far.
+    return round(((e/initiativeGeneCountPeak) * geneLen * exp(-geneLen/initiativeGeneCountPeak) * 6) - 3)
+
+
+
+
+

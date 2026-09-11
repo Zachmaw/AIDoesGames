@@ -12,3 +12,9 @@ def diceRoll(dice: int, difficultyClass: int, bonus: int =0):
         return False
 def hextobin(hexaString):
   return bin(int(hexaString, 16))[2:].zfill(len(hexaString) * 4)
+def binToHex(binaryString):
+    return hex(int(binaryString, 2))
+
+
+
+# print(binToHex(hextobin("c0ffee")))

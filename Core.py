@@ -1,13 +1,42 @@
 
 
-# Obtain settings regarding the size/position of the game window.
-# call a selected environment from the environments folder
-# The Simulation initializes an Environment, checking it's maxPopulation.
-# load a nn from text file or pickle or something
-# The Sim loads the population of availiable Genomes.
-# The Sim adds all players to the Environment, starting with User Agents followed by NN Agents.
-# The Sim selects from the population of Genomes based on the Env's max population.
+
+### The Simulation needs to:
+# Obtain settings regarding viewport, sim config, and more.
+# Initialize a selected Environment, checking it's maxPopulation.
+# Generate the environment for the Agents to interact with.
+# Load the pool of availiable parent Genomes.
+# For maxPopulation - len(queuedUsers):
+    # Select random(user-set chance% of non-replacement) parentGenome
+    # Generate mutatedGenome from selected with mutation odds
+# Assign all players to the Environment, starting with User Agents followed by NN Agents.
 #
+# After the settup, the Simulator takes observations from the Env as a list of floats( for the given initiative index),
+# passes them to the Agent( whose initiative turn it is),
+# expects a list( with length defined by the Env) of floats(with range 0 to 1) in return,
+# use settings to determine the threshold for differentiating/translating to bool,
+# 
+
+
+
+# we:
+    # select an environment
+        # Environments vary in max Agents per run
+    # load/generate a population of NN with feature limits imposed by the selected Env
+        # If generating, the number of genes per genome should be balanced with the number of attempts, think y=0.75x .
+    # Enter a loop. While Environment is running:
+        # for each agent in the initiative list
+            # Agent is given their perspective vector( a list of floats)
+                # first step in the Env all Agents recieve empty inputs
+                    # Hopefully this teaches them to observe their surroundings before taking actions that might be harmful...
+            # NN outputs(as bool) are given to the Environment so it can make adjustments.
+        # The Env ticks forward, compounding all taken actions and generating fresh perspectives.
+    # The match is over and scores are compared. User settings determine threshold for genome saving.
+
+
+
+
+
 
 # the Simulation communicates between Agent and Environment.# what do you mean by that?
 # because like the Agent and the Environment are seperate...# duh
@@ -16,16 +45,6 @@
 # Sim loads the specified environment. currentEnv = class
 
 
-# we need to:
-    # select an environment
-        # Environments vary in max Agents per run
-    # load/generate a population of NN with feature limits imposed by the selected Env
-        # If generating, the number of genes per genome should be balanced with the number of attempts, think y=0.75x .
-    # Enter a loop:
-        # whiteboard
-        # Agents all are given the input vector
-            # first step in the Env all Agents recieve empty inputs
-            # and the outputs are given to the Environment so it can take it's first turn
 
 
 
@@ -103,7 +122,8 @@ def decodeInitiativeGene(speedGene:"str"):
 
 EnvList = {
     'pig': Pig,
-    'dice': Pig
+    'dice': Pig,
+    'balloon': Balloon
 }
 validEnvNames = EnvList.keys()
 # list_of_environments = dict(some=SomeClass,
@@ -118,7 +138,7 @@ def pickEnv():
                 print("A descision, made...\n\n")
                 trying = False
         except:
-            print("That's not a valid entry at the moment.\nSorry if you believe this to be in error.\n\n\n\n\nbut it's not.   }:)")
+            print("That's not a valid entry at the moment.\nSorry if you believe this to be in error.\n\n\n\n\nbut it's not.\n   }:)\n")
     return choice
 
 
@@ -163,11 +183,11 @@ def replace_str_index(text, index=0, replacement=''):
 def mutateHexdec(gene:"str", radiationExposure:"float", radiationSeverity:"int"):
     '''raises/lowers the value of random bonds by severity modulo 16'''
     for i in range(len(gene)):
-        if diceRoll(1000, 994, 1000 * radiationExposure):### it shouldnt loop over from 0 to 15 and vice versa. Cap it.# Cap it? no looping? Why shouldn't it?
+        if diceRoll(1000, 994, round(1000 * radiationExposure)):
             gene = replace_str_index(gene, i, HEX_OPTIONS[int(gene[i], 16) + random.choice([1 + radiationSeverity, 15 + radiationSeverity]) % 16])
     return gene
 
-# def normalize(intVector:"list"):### decide on a standard format.
+# def normalize(intVector:"list"):
     # pass# maybe handled by Envs? Nay, user needs raw data. find a way to handle it here...
     # that's kinda unfair. We should give any user the same normalized inputs we would give the CPU.
     ### Each env should handle their own normalizations.

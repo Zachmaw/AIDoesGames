@@ -12,7 +12,7 @@
 # First, the Environment is selected. The Env rules are loaded into the Env class or it's child.
 # Then, from envRules, we know the expected NN outputs and player count and can populate the Sim with the NN/Agents and their speed.
 # Sim
-class Env:### Neither this not it's children can accept arguments.
+class Env:### Neither this not it's children can accept arguments on init.
     '''
     All inheritors must declare the following:
     PlayerCount: int, 
