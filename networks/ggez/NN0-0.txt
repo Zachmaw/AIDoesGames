@@ -1,4 +1,0 @@
-SHello
-P,
-Eworld
-D!

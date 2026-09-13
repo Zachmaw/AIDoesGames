@@ -11,23 +11,32 @@ def strxor(str1, str2):# GPT did it
     return "".join(str(int(str1[i]) ^ int(str2[i])) for i in range(size))
 
 broCantType = True
+attempts = 0
 while broCantType:
     try:
-        genomeLen = int(input("How many bits: "))
-        popCount = int(input("How many mutation iterations: "))
+        geneLen = int(input("How many bits: "))
+        mutCount = int(input("How many mutation iterations: "))
         broCantType = False
     except:
-        print("Please, use numbers only.\nAnd NOT in word form...")
+        attempts += 1
+        if attempts <=5:
+            print("Please, use numbers only.\nAnd NOT in word form...")
+        elif attempts <= 9:
+            print("You better know how to read...")
+        else:
+            print("Alright, that's enough. You're done."*5)
+            quit()
+            
 ## del broCantType
 bstring = list()# generate bitstring with that length
-for i in range(genomeLen):
+for _ in range(geneLen):
     bstring.append(str(random.randint(0, 2)))
 thingy = bstring
 print("".join(thingy))
-for i in range(popCount):# print that many variations of the first string with only one random bit flipped each
+for _ in range(mutCount):# print that many variations of the first string with only one random bit flipped each
     second = list()
-    whichBits = random.randint(0, genomeLen)
-    for i in range(genomeLen):
+    whichBits = random.randint(0, geneLen)
+    for i in range(geneLen):
         if not i in whichBits:
             second.append("0")
         else:
@@ -38,7 +47,7 @@ for i in range(popCount):# print that many variations of the first string with o
 
 # random chance to mutate, bad.
 # randomly placed but predetermined mutation count, better.
-# systematicly varied placement of mutations, awefull.
+# systematicly varied placement of mutations, awful.
 
 
 

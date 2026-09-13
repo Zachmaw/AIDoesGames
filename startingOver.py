@@ -16,23 +16,10 @@
 
 
 ### Theres so much math involved with generation count...
-# I want to proload Generation math which takes in how many generations you want to plan for and populates a list with that many of whatever the answer is...
+# I want to preload Generation math which takes in how many generations you want to plan for and populates a list with that many int/float/bool of whatever the answer is...
 # use txt files. set and reset the name to be the settings and range generated.
 
 
-
-
-
-
-### when a pop is faced with mutation
-# we need to know in what ways and how bad it is.
-# A: number of flips per gene
-# B: number of affected genes
-# C: add/remove gene
-    # Figure out add or del
-        # A and B get normalized and compared?
-    # then which gene?
-        # if remove,  
 
 
 
@@ -106,29 +93,6 @@ def readFile(filename: str, dataType):
 
 ############### INITIATIVE RELATED FUNCS
 
-def decodeSpeed(hexdecSpeedGene:"str"):
-    '''Alrighty... How do I want to do this?
-    I want to make it so that the number 
-    of characters in the speed gene affects
-    the range of speeds available to that genome
-    then I can just average out the hexdec digits
-    by their index and transform the result with a
-    coresponding speed list which has been cropped.
-    How do I make a graph to indicate what I want...
-    I need to know what slopes I want until what points.
-    I need to know my x and y axiis.
-    x axis = number of genes in the genome
-    y axis = the 'bonus' to initiative value
-    we can cap y at 0 and 1
-    x is 0 to unbounded
-    
-    take the average, range(0,15)
-    apply balance bonus to all, +3
-    apply bonus based on gene count, +-2
-    newRange = (1,20)'''
-    
-    pass
-
 def decodeInitiativeGene(speedGene:"list"):
     '''Takes the hexStr in after it's been gathered from the entire genome.
     Decode it to a list of numbers.
@@ -184,14 +148,14 @@ def generate_fetch_bonus_table(peak: int, max_len: int = 150):# pregenerate the 
 # but with odds adjusted based on the scaled_odds.
 
 
-paramMutOdds = [
-    0.05,  # source_type
-    0.1,  # source_ID
-    0.05,  # sink_type
-    0.1,  # sink_ID
-    0.05, 0.2, 0.05, 0.2,# weight x4 
-    0.05,  # sourceNodeBias
-    0.15   # initiativeGene
+paramMutOdds = [# requires normalization
+    2,  # source_type
+    5,  # source_ID
+    2,  # sink_type
+    5,  # sink_ID
+    8, 8,# weight x2
+    3,  # sourceNodeBias
+    1   # initiativeGene
 ]# Represents odds compared to each other that a given nibble is selected for the distributed mutation
 # I want these odds to shift with generation count according to a sine wave.
 # even inicies shift up while odd indicies shift down.
@@ -216,7 +180,7 @@ def mutateOneGene(gene: str, num_mutations: int, genCount: int) -> str:
     gene_list = list(gene)
 
     # Modulate odds with generation-based scalar
-    scalar_LTable = get_or_generate(modulate_param_mut_odds, ["mutOdds", ], [current_scalar]), 15, 1.5)# paramMutOdds = get_or_generate(modulate_param_mut_odds, ["paramMutOdds"], [current_scalar])
+    scalar_LTable = get_or_generate(modulate_param_mut_odds, ["mutOdds", ], [current_scalar], 15, 1.5)# paramMutOdds = get_or_generate(modulate_param_mut_odds, ["paramMutOdds"], [current_scalar])
 
     # scalar = get_param_mut_scalars(generation)
     mutMutOdds = [min(1.0, chances * scalar_LTable[genCount]) for chances in paramMutOdds]
@@ -347,7 +311,7 @@ get_filename("mutationOdds", 200, 16)### but we need to know 3 things. Which seg
 
 
 
-def get_or_generate(usedFunction: function, function_context: list[str], params: list[int]) -> list[float]:
+def get_or_generate(usedFunction: FunctionType, function_context: list[str], params: list[int]) -> list[float]:
     filename = get_filename(function_context, params)
     if os.path.exists(filename):# print(f"Loading data from {filename}")
         return readFile(filename)
@@ -358,10 +322,11 @@ def get_or_generate(usedFunction: function, function_context: list[str], params:
 
 
 
+def get_mod_scalar(generation_count):
+    return generation_count + 15 % 30
 
 mod_scalar = get_mod_scalar(generation_count)
 paramMutOdds = get_or_generate(modulate_param_mut_odds, ["paramMutOdds"], [round(mod_scalar, 3)])
-
 
 
 # I just want to know, based on current generation, how should the mutOdds be scaled
@@ -372,10 +337,9 @@ def get_param_mut_scalars(genCount: int):
     """
     # Rescale x to make high peaks 15 generations apart (period = 30)
     x = linspace(genCount - 1, genCount, 1000)
-    freq_wave = 1 + 0.5 * sin(2 * pi * x / 30)  # period = 30 gens### plot that, make sure I don't need to chop that.
+    freq_wave = 1 + (0.5 * sin((2 * pi * x) / 30))  # period = 30 gens### plot that, make sure I don't need to chop that.
     phase = cumsum(freq_wave) * (x[1] - x[0])
-    y = sin(phase)[-1]  # get latest value
-    scalar = (y + 1) / 2  # normalize [-1, 1] → [0, 1]
+    scalar = (sin(phase) + 1) / 2  # normalize [-1, 1] → [0, 1]
     return scalar
 
 def modulate_param_mut_odds(params):# generate a modulated odds list based on params

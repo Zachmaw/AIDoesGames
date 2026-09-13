@@ -15,30 +15,12 @@
         # which is returned
             # on the first step in the Env, Agent recieves empty inputs as no actions have yet been taken? Why can't shit just depend on the env...
         # 
-        
-        
-class Sim:
-    def advance(self):
-        '''Advance the Simulation by one "step"\n
-        that means go down the initOrder\n
-        and update gamestate with each Agents input.'''
-        pass
-        for speed, agentID in self.initOrder:
-            newObservations = self.environment.recieveData?()
-        
 
 
 
 
 
- 
-# the NN is being stored in the init order list in the Sim class
-# so I need a class function of Sim to call 
- 
- 
-class Sim():
-    def addPlayer():
-        pass
+
 # when the Sim adds an Agent it needs to:
 # generate the Agent, with genome based on current generation,
 # storing it in playersDict with an ID, incrementing by one.
@@ -51,10 +33,11 @@ def decodeSpeed(hexdecSpeedGene:"str"):
     I want to make it so that the number 
     of characters in the speed gene affects
     the range of speeds available to that genome
-    then I can just average out the hexdec digits
-    by their index and transform the result with a
-    coresponding speed list which has been cropped.
-    How do I make a graph to indicate what I want...
+    then I can just mean the hexdec digits
+    and transform the result with a coresponding
+    speed list which has been cropped
+    to the previously stated range.
+    How do I use a graph to indicate what I want...
     I need to know what slopes I want until what points.
     I need to know my x and y axiis.
     x axis = number of genes in the genome
@@ -68,27 +51,16 @@ def decodeSpeed(hexdecSpeedGene:"str"):
     newRange = (1,20)'''
     
     pass
- 
- 
- 
-# on an Agents initiative, 
-# we pass to the Agent the current observations
-# which we get with
-class Sim:
-    def advance(self):
-        actionVector = self.agents[f"NN{self.initOrder[self.currentInitiative][1]}"].nn.think(
-        )### this is the part where I gather the observations.
-# we recieve from the Agent it's actionVector
-# pass actionVector to Sim.environment.proccess?
-# should update the environment gamestate in place.
- 
- 
 
 
- 
- 
- 
+
+
+
 class Sim:
+
+    # the NN is being stored in the init order list in the Sim class
+    # so I need a class function of Sim to call 
+
     def __init__(self, game:'str') -> None:### game needs to be a string?
         # self.playerCount = self.environment.playerCount#####
         ### Nah bro, just check that when I'm generating them.
@@ -99,12 +71,42 @@ class Sim:
         # self.initiativeOrder.append(50, "LairAction")
         # lair actions are only needed if an Env can
         # modify its own internal state.
+    def advance(self):
+        '''Advance the Simulation by one "step"\n
+        that means go down the initOrder\n
+        and update gamestate with each Agents input.'''
+
+
+
+
+        for speed, agentID in self.initOrder:
+            self.agents[agentID] = self.environment.percieve()
+
+
+    # on an Agents initiative, 
+    # we pass to the Agent the current observations
+    # which we get with
+    def advance(self):
+        actionVector = self.agents[f"NN{self.initOrder[self.currentInitiative][1]}"].nn.think(
+        )### this is the part where I gather the observations.
+    # we recieve from the Agent it's actionVector
+    # pass actionVector to Sim.environment.proccess?
+    # should update the environment gamestate in place.
+
+
+    def addPlayer(self):
+        pass
+        
+
+
+
+
+
  
  
     def addAgent(self, agentID:'tuple(int, int)', environmentString:"str"):### load agent from genome into player dict, giving it a temporary 'system ID'. If it gets selected for reproduction, it will recieve a new ID and be saved.
         genome = loadGenome(agentID, environmentString)
-        
- 
+
 
 
 
@@ -141,7 +143,7 @@ class ToS2(Env):
         self.roles = {
             'Vigilante': {'Abilities': 1, }# that doesnt tell if its player selector or bool like alert...
 
- 
+
         }
 # an example of the function which is required to
 # accept a certain number of actions:
@@ -162,29 +164,34 @@ class Pig():
 # so, Sim can track:
     # initOrder, list of two ints representing init roll and ID/index in players list
     # currentTurn, NOT the index in initOrder
- 
- 
+
+
 # full auto...
 # how many genomes to attempt per generation
 # how many genomes to keep per generation
 # how many generations
 # 
- 
+
 # manual
- 
- 
- 
- 
+
+
+
+
+
+
+
 # some games, like ToS, need more to be tracked
 # like day/night
 # like role abilities
- 
- 
+
+
+
 # name the genome being saved
 # as NN[generation]-[savedIndex]
- 
- 
- 
+
+
+
+
 def askPlayer(observations, obvsTypes):
     
     for i in range(observations):
@@ -207,40 +214,42 @@ def askPlayer(observations, obvsTypes):
         # return self.nn.think(inputs)
     # else:
         # 
-        
-        
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ######
 # self.brain = NeuralNetwork(expectedOutputs:'int', genes:'list[str]', irradiation:"float"=0.01):
 # agent.brain.seed()
 ### Gets called by the Sim when the Network has been selected to aid in repopulation.
 
- 
- 
- 
+
+
+
 # What if the first output node( in sequence) firing means the network wants to update it's memory
 # The second and third indicate location(, but by what formatting?).
 # And the fourth output indicating what to set to.
@@ -261,20 +270,20 @@ class Agent:# Recieves rewards and observations, and returns an action
                 pass
             pass### Make the object recieve input from input devices( wait on the User)
             # THIS Agent is a Player
- 
+
     # def rollInitiative(self):
     #     # self.initiative =
     #     pass
- 
- 
- 
+
+
+
 # Does each Env NEED to be a class? # I think so, yeah...
 # all Environments inherit from the base Env class because they all need to
 # remember their own internal state
 # uhh, no. That's *why* they're a class, not why they inherit from one.
- 
- 
- 
+
+
+
 # which means when this is called by the Sim
 # (which is where the Agents are stored)
 # currentGeneration, currentEnvironment, and AgentID
@@ -288,9 +297,9 @@ def loadGenome(genomeID:"tuple(int, int)", envStr:"str"):
         for line in f.readlines():
             genome.append(line.strip())
     return genome
- 
- 
- 
+
+
+
         speedSeq = list()
         genome = list()
         for i in range(len(genes)):# run through all the genes in the genome# Decode all the connections into tuples.# for synapse(index) in the_genome:
@@ -303,23 +312,34 @@ def loadGenome(genomeID:"tuple(int, int)", envStr:"str"):
             # disect gene
  
         decodeSpeedGene()
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class EnvBase():
     pass
-    
-    
-    
- 
- 
 
 
 
@@ -339,18 +359,4 @@ class EnvBase():
 
 
 
-
-
-
-
-
-
-
-
-
- 
- 
- 
 # NOTES
- 
- 

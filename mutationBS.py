@@ -6,7 +6,7 @@ from random import randint
 
 
 def diceRoll(dice: int, difficultyClass: int, bonus: int =0):
-    roll = randint(1, dice+1)
+    roll = randint(1, dice)
     if roll == dice:# if critical roll
         return True
     if roll == 1:# if natural 1

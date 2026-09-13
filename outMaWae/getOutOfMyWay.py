@@ -392,7 +392,7 @@
 
 # ~~~~~~~~~~~~ something
 
-def uniquify(path):
+def uniquify(path:"str"):# If I remember correctly, makes a unique filename based on a standard one.
     filename, extension = os.path.splitext(path)
     counter = 0
     while os.path.exists(path):
